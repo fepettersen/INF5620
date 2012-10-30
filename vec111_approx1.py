@@ -42,5 +42,22 @@ a(bv) = a(bcx + bd) = abcx + abd = (ab)v
 """
 Chapter: Finite element methods, Exercise 2
 """
+# Show that both examples of spaces from excercise 1 can be equipped with an inner product
+# and show that the choise of inner product satisfies the general requirements of an inner product in a vector space
 
+#1: <u,v> = <v,u>
+<u,v> = (a,b)(c,d) = ac + bd = ca + db = (c,d)(a,b) = <v,u>	#because a,b,c,d \in R
+<u,v> = (ax+b)(cx+d) = acx**2 +adx + bcx + bd = cax**2 + dax + cbx + db = (cx+d)(ax+b) = <v,u>
 
+#2: <u+v,w> = <u,w>+<v,w>
+<u+v,w> = (a+c,b+d)(e,f) =(a+c)e + (b+d)f = ae + ce + bf + df = (a,b)(e,f) + (c,d)(e,f) =<u,w>+<v,w>  
+<u+v,w> = ((a+c)x + b+d)(ex+f) = (a+c)ex**2 + (a+c)fx + (b+d)ex +(b+d)f = aex**2 + cex**2 \
+afx + cex +afx + cfx + bf + df = (ax+b)(ex+f) + (cx+d)(ex+f) = <u,w>+<v,w>	#see point 1
+
+#3: <ku,v> = k<u,v>
+<ku,v> = (ka,kb)(c,d) = kac + kbd = k(ac + bd) = k(a,b)(c,d) = k<u,v>
+<ku,v> = (kax + kb)(cx+d) = kacx**2 + kadx + kbcx + kbd = k(acx**2 +adx + bcx + bd) = (ax+b)(cx+d) =  k<u,v>
+
+#4: <u,u> = 0 if and only if u=0
+<u,u> = (a,b)(a,b) = a**2 + b**2 >= 0 if a,b \in R (not complex) and <u,u> = 0 if and only if a = b = 0
+<u,u> = (ax+b)(ax+b) = a**2x**2 + 2abx + b**2 >= 0 a,b \in R (not complex) and <u,u> = 0 if and only if a = b = 0
