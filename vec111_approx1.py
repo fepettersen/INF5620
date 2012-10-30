@@ -61,3 +61,14 @@ afx + cex +afx + cfx + bf + df = (ax+b)(ex+f) + (cx+d)(ex+f) = <u,w>+<v,w>	#see 
 #4: <u,u> = 0 if and only if u=0
 <u,u> = (a,b)(a,b) = a**2 + b**2 >= 0 if a,b \in R (not complex) and <u,u> = 0 if and only if a = b = 0
 <u,u> = (ax+b)(ax+b) = a**2x**2 + 2abx + b**2 >= 0 a,b \in R (not complex) and <u,u> = 0 if and only if a = b = 0
+
+"""
+Chapter: Finite element methods, Exercise 3
+"""
+
+# given the vectors phi_0 = (1,0) and phi_1 = (0,1). Approximate the vector f = (1,1,1) by the least squares method.
+# We use equation (10) in the lecture notes on finite elements to do this c_i = <f,phi_i>/<phi_i,phi_i>:
+
+c_0 = (1,1,1)(1,0,0)/(1,0,0)(1,0,0) = 1/1 = 1
+c_1 = (1,1,1)(0,1,0)/(0,1,0)(0,1,0) = 1/1 = 1
+#the best approximation  is then u = (1,1) in the plane.
