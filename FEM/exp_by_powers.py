@@ -12,7 +12,6 @@ def least_squares(f,phi,Omega):
 			A[i,j] = sm.integrate(phi[i]*phi[j],(x,Omega[0],Omega[1]))
 			A[j,i] = A[i,j]
 		b[i,0] = sm.integrate(phi[i]*f,(x,Omega[0],Omega[1]))
-	print A,b
 	c = A.LUsolve(b)
 	u = 0
 	for i in range(len(phi)):
@@ -40,5 +39,5 @@ f = sm.exp(x)
 phi = [1,x,x**2,x**3,x**4,x**5,x**6,x**7,x**8]
 Omega = [1,4]
 u = least_squares(f,phi,Omega)
-print u
+#print u
 comparison_plot(f,u,Omega)

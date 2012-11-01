@@ -35,7 +35,7 @@ def least_squares_orth(f,phi,Omega):
 
 x = sm.Symbol('x')
 phi = [sm.sin(x),sm.sin(2*x),sm.sin(3*x)]
-omega = [0,3.14159*2]
+omega = [0,3.14159]
 f = sm.sin(20*x)
 
 u = least_squares_orth(f,phi,omega)
