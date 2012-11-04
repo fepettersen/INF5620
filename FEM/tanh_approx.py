@@ -1,3 +1,5 @@
+# HPL: made loops over s, N and type of points.
+
 import numpy as np
 import sympy as sm
 import matplotlib.pyplot as mpl
@@ -42,10 +44,10 @@ def Lagrange_polynomials(x, N, Omega, point_distribution='uniform'):
 		points = Chebyshev_nodes(Omega[0], Omega[1], N)
 	phi = [Lagrange_polynomial(x, i, points) for i in range(N+1)]
 	return phi, points
-	
-	
 
-def comparison_plot(f,u,Omega,filename = 'tmp.pdf'):
+
+
+def comparison_plot(f,u,Omega,filename = 'tmp.pdf', plot_title=''):
 	x = sm.Symbol('x')
 	f = sm.lambdify([x],f,modules="numpy")
 	u = sm.lambdify([x],u,modules="numpy")
@@ -58,9 +60,10 @@ def comparison_plot(f,u,Omega,filename = 'tmp.pdf'):
 	mpl.hold('on')
 	mpl.plot(xcoor,exact)
 	mpl.legend(['approximation','exact'])
+	mpl.title(plot_title)
 	mpl.show()
 	mpl.savefig(filename)
-	
+
 def interpolation(f, phi, points):
 	N = len(phi) - 1
 	A = sm.zeros((N+1, N+1))
@@ -79,12 +82,17 @@ def interpolation(f, phi, points):
 		u += c[i,0]*phi[i](x)
 	return u
 
-N = 3
 x = sm.Symbol('x')
 Omega = [0,1]
-[phi,points] = Lagrange_polynomials(x, N, Omega, point_distribution='Chebyshev')
-s = 10
-f = sm.tanh(s*(x-0.5))
-u = interpolation(f,phi,points)
-filename = 'tmp_N_%d_s_%d_chebyshev.pdf'%(N,s)
-comparison_plot(f,u,Omega,filename)
+for s in 10,100:
+    f = -sm.tanh(s*(x-0.5))
+    for N in 3,6,9,11:
+        for distribution in 'uniform', 'Chebyshev':
+	    phi, points = Lagrange_polynomials(x, N, Omega,
+					       point_distribution=distribution)
+
+	    u = interpolation(f, phi, points)
+	    filename = 'tmp_N_%d_s_%d_%s.pdf' % (N, s, distribution)
+	    comparison_plot(f,u,Omega,filename,
+			    plot_title='s=%g, N=%d, %s points' %
+			    (s, N, distribution))
