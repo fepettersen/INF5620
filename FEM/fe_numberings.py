@@ -9,7 +9,7 @@ corresponding nodes and elements lists in each case.
 nodes = [0,1,1.2,2]
 elements = [[0,1],[1,2],[2,3]]
 
-#giving us 
+#giving us
 nodes[elements[1][0]] = nodes[1] = 1
 
 '''Thereafter, subdivide the element [1.2, 2] into two new equal-sized elements.
@@ -19,3 +19,9 @@ lists.
 # Dividing element #2 in two new equally sized elements yields
 nodes = [0,1,1.2,1.6,2]
 elements = [[0,1],[1,2],[2,3],[3,4]]
+
+# HPL: You can minimize the modifications by doing nodes.append(1.6) and
+# elements[-1] = [2, 4]
+# elements.append([4, 3])
+# I have changed the text in the exercise to encourage this type of
+# modifications.

@@ -32,12 +32,12 @@ def comparison_plot(f,u,Omega,filename = 'tmp.pdf'):
 	mpl.legend(['approximation','exact'])
 	mpl.show()
 	#savefig(filename)
-	
+
 
 x = sm.Symbol('x')
-f = sm.exp(x)
+f = sm.exp(-x)
 phi = [1,x,x**2,x**3,x**4,x**5,x**6,x**7,x**8]
 Omega = [1,4]
 u = least_squares(f,phi,Omega)
-#print u
+print u
 comparison_plot(f,u,Omega)

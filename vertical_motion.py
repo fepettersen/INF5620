@@ -1,3 +1,9 @@
+# HPL: To reuse this file as a module, all computations should be
+# encapuslated in function (i.e., the time stepping loop and the plotting
+# in your case). Otherwise this is a very clear, clean and to-the-point
+# solution. One of the very best I've seen. Despite the simple math,
+# programming this exercise has resulted in a lot of messy codes...
+
 import sys
 import matplotlib.pyplot as plt
 from math import pi,log10
@@ -28,7 +34,7 @@ v = zeros(N)
 
 #------- functions ------------------
 def Reynolds (v,d,rho,mu):
-	return (rho*d*v)/mu 
+	return (rho*d*v)/mu
 def constants(Re):
 	return a1 if Re<1.0 else a2
 def step(Re,v,a):
