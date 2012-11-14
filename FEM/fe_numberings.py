@@ -16,6 +16,6 @@ nodes[elements[1][0]] = nodes[1] = 1
 Add the new node and the two new elements to each of the nodes and elements
 lists.
 '''
-# Dividing element #2 in two equally sized elements yields
+# Dividing element #2 in two new equally sized elements yields
 nodes = [0,1,1.2,1.6,2]
 elements = [[0,1],[1,2],[2,3],[3,4]]
