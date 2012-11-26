@@ -1,0 +1,54 @@
+\documentclass[a4paper,english, 10pt, twoside]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{amsfonts, amssymb, amsmath}
+\usepackage{listings}
+\usepackage{float}	%force figures in place with command \begin{figure}[H]
+\renewcommand{\d}{\partial}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
+
+
+%opening
+\title{Nonlinear diffusion equation with finite elements}
+\author{Fredrik E Pettersen\\ fredriep@student.matnat.uio.no}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+In this project we will look at a simple linear second order differential equation.
+\end{abstract}
+
+\section*{About the problem}
+In this project we will solve a nonlinear diffusion equation using the finite element method and the FEniCS software package.
+More precicely we will be looking at the equation
+\begin{equation}\label{eq}
+ \rho u_t = \nabla\cdot(\alpha(u)\nabla u) +f(\mathbf{x},t)
+\end{equation}
+where $\rho$ is a constant, $\alpha(u)$ is a known function of u, and where we have the initial condition $u(\mathbf{x},0) = I(\mathbf{x})$, 
+and Neuman boundary conditions $\frac{\d u}{\d n} = 0$.
+
+\section*{Discretization}
+In order to solve equation (\ref{eq}) we will need to discretize it. The standard approach is then to pick a nummerical approximation to the 
+derivatives. We will use a finite difference discertization in time, more specifically the Backward Euler (BE) discretization, and a finite element 
+approximation in space. The BE discertization gives us
+\begin{align*}
+ \rho u^n = \Delta t\nabla\cdot(\alpha(u)\nabla u) +\Delta t f(\mathbf{x},t) +\rho u^{n-1} \\
+ \rho u^n - \Delta t\nabla\cdot(\alpha(u)\nabla u) -\Delta t f(\mathbf{x},t) -\rho u^{n-1} = R
+\end{align*}
+we now approximate R on a functionspace V and minimize the error by demanding
+$$
+\big(R,v\big) = 0 \;\;\; \forall \. v\in V
+$$
+\section*{Source code}
+
+\section*{Analytic solution}
+
+\section*{Results}
+
+\section*{Final comments}
+\end{document}
