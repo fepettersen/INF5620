@@ -1,0 +1,78 @@
+\documentclass[a4paper,english, 10pt, twoside]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{amsfonts, amssymb, amsmath}
+\usepackage{listings}
+\usepackage{float}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
+\renewcommand{\d}{\partial}
+%opening
+\title{Diffusion equation with Finite elements\\ INF5620}
+\author{Fredrik E Pettersen}
+
+\begin{document}
+\maketitle
+
+\section*{About the problem}
+The goal of this project is to solve the diffusion equation in 2 spatial dimensions by the Finite Element Method, using the FEniCS software 
+package. Preferably with some non-linear terms which are to be specified later. The equation is then on the form
+\begin{equation}\label{eq}
+ \rho C(u)\frac{\d u}{\d t} = \nabla\cdot \alpha(u)\nabla u +f(x,y,t)
+\end{equation}
+
+\section*{First simplified discretization}
+To simply get started we begin by simplifying  equation (\ref{eq}) quite a lot. If we set
+$$
+\rho = C(u) = \alpha(u) = 1
+$$
+we are left with the simple two-dimensional diffusion equation with a source term.
+\begin{equation}\label{simplified}
+\frac{\d u}{\d t} = \nabla^2u +f
+\end{equation}
+Using Backward Euler discretization in time we get
+$$
+u^n = \Delta t \nabla^2 u + \Delta t f +u^{n-1} 
+$$
+and set 
+$$
+R = u^n - \Delta t \nabla^2 u - \Delta t f -u^{n-1} = 0
+$$
+We define a functionspace $V$ and demand
+\begin{align*}
+(R,v) = 0 \;\; &\forall \;\;v \in V \\
+\implies \int_{\Omega}u^nvdx -&\Delta t\int_{\Omega}\nabla^2u^nvdx -\Delta t\int_{\Omega}fvdx -\int_{\Omega}u^{n-1}vdx = 0 \\
+\int_{\Omega}u^nvdx -&\Delta t\big([\nabla u^n v]_0^L -\int_{\Omega}\nabla u^n\nabla vdx -\Delta t\int_{\Omega}fvdx\big) 
+-\int_{\Omega}u^{n-1}vdx = 0
+\end{align*}
+Defining $a =  \int_{\Omega}u^nvdx$ and $\mathcal{L} =\Delta t\int_{\Omega}\nabla u^n\nabla vdx -\Delta t\int_{\Omega}fvdx +
+\int_{\Omega}u^{n-1}vdx $ we get the so called weak form which is what we plug into the FEniCS software. Of course we will need to specify the 
+function $f(x,y,t)$ and what basisfunctions should span the functionspace and so on. So let us do this now, and focus on the details later. 
+Choosing Lagrange polynomials of degree 1 we know that a polynomial of degree 2 in space and degree 1 in time. A suitable solution to equation 
+\ref{simplified} is 
+\begin{align*}
+ u(x,y,t) = 1+x^2 +\alpha y^2 +\beta t \\
+ \frac{\d u}{\d t} = \beta. \;\;\; \nabla^2u = 2+2\alpha\\
+ \implies f(x,y,t) = \beta-2-2\alpha
+\end{align*}
+This solution should be reproduced to (almost) machine precision. 
+
+\begin{lstlisting}
+Max error, t=0.20: 0.00000000000003997
+Max error, t=0.30: 0.00000000000004796
+...
+Max error, t=1.90: 0.00000000000009948
+Max error, t=2.00: 0.00000000000010347
+\end{lstlisting}
+
+We can also compare the solution from the FEM to a finite difference scheme. The equation in question is in this case an even simpler one
+\begin{equation}
+ \frac{\d u}{\d t} = \nabla^2u
+\end{equation}
+on the domain $x,y\in[0,1]$ with Dirichlet boundary conditions $u(0,y,t)=u(1,y,t)=u(x,0,t)=u(x,1,t) = 0$
+\section*{Slightly more complex}
+
+
+\end{document}
