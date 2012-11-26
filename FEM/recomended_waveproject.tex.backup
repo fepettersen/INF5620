@@ -56,8 +56,9 @@ $$
 \section*{c)}
 Using the approximation of u in (\ref{approx}) we can set up the variational for as a linear system
 \begin{align*}
- \int\limits_0^Lu_j^{n+1}vdx -2\int\limits_0^Lu_j^nvdx + \int\limits_0^Lu_j^{n-1}vdx + \int\limits_0^Lu_x^nv_xdx  \\
-  = \sum\int\limits_0^L\phi_j^{n+1}\phi_idx
+ \int\limits_0^Lu_j^{n+1}vdx -2\int\limits_0^Lu_j^nvdx + \int\limits_0^Lu_j^{n-1}vdx &+ \int\limits_0^Lu_x^nv_xdx    = \\
+\sum\limits_j^{N_x}\int\limits_0^L(\phi_j\phi_i)c_j^{n+1}dx - 2\sum\limits_j^{N_x}\int\limits_0^L(\phi_j\phi_i)c_j^{n}dx &+ 
+  \sum\limits_j^{N_x}\int\limits_0^L(\phi_j\phi_i)c_j^{n-1}dx - C^2\sum\limits_j^{N_x}\int\limits_0^L(\phi'_j\phi'_i)c_j^{n}dx
 \end{align*}
-
+If we now set $M_{ij} = \int\limits_0^L(\phi_j\phi_i)dx$ and $K_{ij} = \int\limits_0^L(\phi'_j\phi'_i)dx $
 \end{document}
