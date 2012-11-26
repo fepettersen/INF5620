@@ -1,0 +1,173 @@
+\documentclass[a4paper,english, 10pt, twoside]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{amsfonts, amssymb, amsmath}
+\usepackage{listings}
+\usepackage{float}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
+%opening
+\title{1D wave equation with finite elements\\ INF5620}
+\author{Fredrik E Pettersen}
+
+\begin{document}
+
+\maketitle
+The purpose of this project is to derive and analyze a finite element method for the 1D wave equation
+\begin{align*}
+ \frac{\partial^2 u}{\partial t^2} = c^2\frac{\partial^2 u}{\partial x^2} \Leftrightarrow D_tD_tu = c^2D_xD_xu\\
+ x\in[0,L], t\in(0,T]
+\end{align*}
+with initial and boundary conditions
+$$
+u(0,t) = U_0(t), u_x(L) = 0, u(x,0) = I(0), u_t(x,0) = V(x)
+$$
+
+\section*{a)}
+If we now use a finite difference method on this equation we can formulate a series of spatial problems as follows
+\begin{align*}
+ D_tD_tu = u_{tt} = \frac{u_j^{n+1} - 2u_j^n+u_j^{n-1}}{\Delta t^2} \\
+ \frac{u_j^{n+1} - 2u_j^n+u_j^{n-1}}{\Delta t^2} = c^2u_{xx}^n \\
+ u_j^{n+1} = \Delta t^2c^2u_{xx}^n + 2u_j^n - u_j^{n-1}
+\end{align*}
+where $n = 0,1,...,N_x$
+\section*{b)}
+Using the Galerkin method we can now transform the series of spatial problems to variational form. I have used the testfunction $v(x)$ which is 
+part of the function space of P1 elements. Assume (for later) that
+\begin{equation}\label{approx}
+v(x) = \phi_i, (i=0,1,...,N) \text{  and  } u^n \simeq \sum\limits_{j=0}^{N_x} \phi_jc^n_j
+\end{equation}
+
+We want the inner product $\left(R,v\right) = 0 $ where $R =  u_j^{n+1} - \Delta t^2c^2u_{xx}^n - 2u_j^n + u_j^{n-1} = 0$. This means that
+\begin{align*}
+ \left(R,v\right)=  \left(u_j^{n+1} - \Delta t^2c^2u_{xx}^n - 2u_j^n + u_j^{n-1},v\right) \\
+ = \int\limits_0^L \left(u_j^{n+1} - \Delta t^2c^2u_{xx}^n - 2u_j^n + u_j^{n-1}\right)\cdot v dx \\
+ = \int\limits_0^Lu_j^{n+1}vdx -2\int\limits_0^Lu_j^nvdx + \int\limits_0^Lu_j^{n-1}vdx - \underbrace{\Delta t^2c^2\int\limits_0^Lu_{xx}^nvdx}_{
+ = \Delta t^2c^2\left([u_xv]_0^L-\int\limits_0^Lu_x^nv_xdx\right)}\\
+ = \int\limits_0^Lu_j^{n+1}vdx -2\int\limits_0^Lu_j^nvdx + \int\limits_0^Lu_j^{n-1}vdx - C^2\int\limits_0^Lu_x^nv_xdx = 0
+\end{align*}
+
+which leads us to the final variational form
+$$
+\left(u^{n+1},v\right) -2 \left(u^n,v\right) + \left(u^{n-1},v\right) - C^2\left(u^n_x,v_x\right) = 0,\;\;\; \forall \;v\in V
+$$
+where
+\begin{equation}\label{courrant}
+ C^2 = -\Delta t^2c^2
+\end{equation}
+
+\section*{c)}
+Using the approximation of u in (\ref{approx}) we can set up the variational for as a linear system
+\begin{align*}
+ \int\limits_0^Lu_j^{n+1}vdx -2\int\limits_0^Lu_j^nvdx + \int\limits_0^Lu_j^{n-1}vdx &+ \int\limits_0^Lu_x^nv_xdx    = \\
+\sum\limits_j^{N_x}\int\limits_0^L(\phi_j\phi_i)c_j^{n+1}dx - 2\sum\limits_j^{N_x}\int\limits_0^L(\phi_j\phi_i)c_j^{n}dx &+ 
+  \sum\limits_j^{N_x}\int\limits_0^L(\phi_j\phi_i)c_j^{n-1}dx - C^2\sum\limits_j^{N_x}\int\limits_0^L(\phi'_j\phi'_i)c_j^{n}dx
+\end{align*}
+If we now set $M_{ij} = \int\limits_0^L(\phi_j\phi_i)dx$ and $K_{ij} = \int\limits_0^L(\phi'_j\phi'_i)dx $ we get
+\begin{align*}
+M_{ii} =  \int\limits_{-1}^1(\phi_i\phi_i)dx, \;\;\;
+M_{ij} = M_{ji} = \int\limits_{-1}^1(\phi_j\phi_i)dx \\
+K_{ii} =  \int\limits_{-1}^1(\phi'_i\phi'_i)dx, \;\;\;
+K_{ij} = K_{ji} = \int\limits_{-1}^1(\phi'_j\phi'_i)dx
+\end{align*}
+Remember that for every $M_{ii}$ and $K_{ii}$ entry there are two possible function combinations because within each element there 
+are defined two functions say $\phi_0 = \frac{1}{2}(1-x)$ and $\phi_1 = \frac{1}{2}(1+x)$. This means that for every diagonal entry 
+we need to calculate the sum of two integrals (or just multiply by 2 since they are equal). The integrals become
+\begin{align*}
+M_{ii} = \int\limits_{-1}^1(\phi_i\phi_i)dX = 2\frac{h}{8}\int\limits_{-1}^1(1-X)^2dX = 2\frac{h}{8}\cdot\frac{8}{3} = \frac{2h}{3}\\
+M_{ij} = \int\limits_{-1}^1(\phi_i\phi_j)dX = \frac{h}{8}\int\limits_{-1}^1(1-X)(1+X)dX = \frac{h}{8}\cdot\frac{4}{3} = \frac{h}{6}\\
+K_{ii} = 2\int\limits_{-1}^1\phi'_i\phi'_idX = 2\int\limits_{-1}^1(\frac{2}{h}\phi'_i\frac{2}{h}\phi'_i)\frac{h}{2}dX
+ = 2\frac{2}{h}\int\limits_{-1}^1\frac{-1}{2}\frac{-1}{2}dX = 2\frac{1}{h}\\
+K_{ij} = \int\limits_{-1}^1\phi'_i\phi'_jdX = \frac{2}{h}\int\limits_{-1}^1\frac{-1}{2}\frac{1}{2}dX = \frac{-1}{h}
+\end{align*}
+This makes our matrices
+\begin{equation*}
+ M = \frac{h}{6}\left(\begin{array}{c c c c c c}
+    4 & 1 & 0 & \dots & & 0 \\
+    1 & 4 & 1 & 0 &\dots & \vdots \\
+    0 & \ddots & \ddots & \ddots & 0& \\
+     & & & & & \\
+     0 & \dots & 0 & 1 & 4 & 1\\
+     0 & & \dots & 0 & 1 & 4
+ \end{array}\right), \:\;
+ K = \frac{1}{h}\left(\begin{array}{c c c c c c}
+          2 & -1 & 0 & \dots & & 0 \\
+	  -1 & 2 & -1 & 0 &\dots & \vdots \\
+	  0 & \ddots & \ddots & \ddots & 0& \\
+	  & & & & & \\
+	  0 & \dots & 0 & -1 & 2 & -1\\
+	  0 & & \dots & 0 & -1 & 2
+                      \end{array}\right)
+\end{equation*}
+And thus naming $\sum\limits_{j=0}^{N_x}c^n_j = \mathbf{c}^n$ we arrive at a linear system to be solved for each timestep
+\begin{equation}\label{linearsystem}
+M\mathbf{c}^{n+1} -2M\mathbf{c}^{n} +M\mathbf{c}^{n-1} -C^2K\mathbf{c}^{n} = 0
+\end{equation}
+
+\section*{d)}
+Say we now (for some well defined reason) would like to compare the i'th equation in (\ref{linearsystem}) with the nummerical 
+scheme 
+\begin{equation}\label{scheme}
+\left[D_tD_t\left(u+\frac{1}{6}D_xD_x\Delta x^2u\right) = c^2D_xD_xu\right]^n_i
+\end{equation}
+
+All we need to do is to find the i'th equation and do some algebra. The i'th equation is
+\begin{align*}
+ &\frac{h}{6}(c^{n+1}_{i+1} + 4c^{n+1}_{i} + c^{n+1}_{i-1}) -\frac{2h}{6}(c^{n}_{i+1} + 4c^{n}_{i} + c^{n}_{i-1}) + 
+ \frac{h}{6}(c^{n-1}_{i+1} +4c^{n-1}_{i} + c^{n-1}_{i-1})\\ 
+ &= \frac{-C^2}{h}(c^{n}_{i+1} -2c^{n}_{i} +c^{n}_{i-1} ) \\
+ &\frac{h}{6}(c^{n+1}_{i+1} -2c^{n}_{i+1} + c^{n-1}_{i+1}) +\frac{2h}{3}(c^{n+1}_{i}-2c^{n}_{i}+c^{n-1}_{i}) + 
+ \frac{h}{6}(c^{n+1}_{i-1}-2c^{n}_{i-1}+c^{n-1}_{i-1}) \\
+ &= \frac{-C^2}{h}(c^{n}_{i+1} -2c^{n}_{i} +c^{n}_{i-1} ) \\ 
+\end{align*}
+Having done the calculation of (\ref{scheme}) quite a few times now, I can easily recognize the left-hand-side of the animal 
+above as the left-hand-side of (\ref{scheme}) times $h$. If we simply divide by $h$ and recognize $C^2$ from (\ref{courrant}) we 
+can set $h = \Delta x$ and arrive at the very scheme we were comparing with. This means that the finite element approach will 
+use more points in the calculation of the next timestep than a normal finite difference scheme.
+
+\section*{e)}
+Let us do some analysis on the finite difference scheme (\ref{scheme}) we are actually using for each timestep. Say that the 
+solution $u$ is some sine-cosine combination represented by the complex exponential $u(x,t) = e^{i(kp\Delta x - \tilde\omega n\Delta t}$. 
+We start off by doing all the derivatives
+\begin{align*}
+ &D_tD_tu = \frac{e^{ikp\Delta x}}{\Delta t^2}\left(e^{-i\tilde\omega (n+1)\Delta t} -2e^{-i\tilde\omega n\Delta t} + 
+ e^{-i\tilde\omega (n-1)\Delta t} \right) \\
+ &= \frac{e^{ikp\Delta x}}{\Delta t^2}\big(-2e^{-i\tilde\omega n\Delta t} +e^{-i\tilde\omega n\Delta t}\big(
+ \underbrace{e^{i\tilde\omega\Delta t}+e^{-i\tilde\omega\Delta t}}_{2-4\sin^2(\frac{\tilde\omega\Delta t}{2})}\big)\big) \\
+ &= \frac{-4}{\Delta t^2}e^{i(kp\Delta x - \tilde\omega n\Delta t)}\sin^2\left(\frac{\tilde\omega\Delta t}{2}\right)
+\end{align*}
+\begin{align*}
+ &D_xD_xu = \frac{e^{-in\tilde\omega\Delta t}}{\Delta x^2}\left(e^{ik(p+1)\Delta x} -2e^{ikp\Delta x} + e^{ik(p-1)\Delta x} \right) \\
+&= \frac{e^{-in\tilde\omega\Delta t}}{\Delta x^2}\big(-2e^{ikp\Delta x} + e^{ikp\Delta x}\big( \underbrace{e^{ik\Delta x}+
+e^{-ik\Delta x}}_{2-4\sin^2(\frac{k\Delta x}{2})}\big) \big) \\
+&= \frac{-4}{\Delta x^2}e^{i(kp\Delta x - \tilde\omega n\Delta t)}\sin^2\left(\frac{k\Delta x}{2}\right)
+ \end{align*}
+and finally for the ``cross'' term we have allready done the nececary calculations for the time derivative and we are left with
+\begin{align*}
+ &D_tD_t(\dfrac{\Delta x^2}{6}D_xD_xu) = D_tD_t\left(\frac{-4}{6}e^{i(kp\Delta x - \tilde\omega n\Delta t)}\sin^2\left(\frac{k\Delta x}{2}\right) \right) \\
+ &=\frac{-4}{6}e^{ikp\Delta x}\sin^2\left(\frac{k\Delta x}{2}\right) D_tD_te^{-i\tilde\omega n\Delta t} \\
+ &= \frac{16}{6\Delta t^2}e^{i(kp\Delta x - \tilde\omega n\Delta t)}\sin^2\left(\frac{k\Delta x}{2}\right)
+ \sin^2\left(\frac{\tilde\omega\Delta t}{2}\right)
+\end{align*}
+so if we insert all the derivatives in the scheme (\ref{scheme}) we get the following animal
+\begin{align*}
+ &\frac{-4}{\Delta t^2}e^{i(kp\Delta x - \tilde\omega n\Delta t)}\sin^2\left(\frac{\tilde\omega\Delta t}{2}\right) + 
+ \frac{16}{6\Delta t^2}e^{i(kp\Delta x - \tilde\omega n\Delta t)}\sin^2\left(\frac{k\Delta x}{2}\right)
+ \sin^2\left(\frac{\tilde\omega\Delta t}{2}\right) \\
+ &= c^2\frac{-4}{\Delta x^2}e^{i(kp\Delta x - \tilde\omega n\Delta t)}\sin^2\left(\frac{k\Delta x}{2}\right)\\
+ &\sin^2\left(\frac{\tilde\omega\Delta t}{2}\right) - \frac{2}{3}\sin^2\left(\frac{k\Delta x}{2}\right)
+ \sin^2\left(\frac{\tilde\omega\Delta t}{2}\right) = C^2\sin^2\left(\frac{k\Delta x}{2}\right) \\
+ &\sin^2\left(\frac{\tilde\omega\Delta t}{2}\right)\left(1-\sin^2\left(\frac{k\Delta x}{2}\right) +\dfrac{1}{3}\sin^2\left(\frac{k\Delta x}{2}\right)\right)
+ = C^2\sin^2\left(\frac{k\Delta x}{2}\right) \\
+ C^2 &= \underbrace{\sin^2\left(\frac{\tilde\omega\Delta t}{2}\right)\cot\left(\dfrac{k\Delta x}{2}\right)}_{\simeq 0} + 
+ \frac{1}{3}\sin^2\left(\frac{k\Delta x}{2}\right)
+\end{align*}
+The maximum value the sine term can be is 1 therefore 
+\begin{equation*}
+ C^2 \leq \frac{1}{3} \implies C \leq \frac{1}{\sqrt{3}}
+\end{equation*}
+
+
+\end{document}
