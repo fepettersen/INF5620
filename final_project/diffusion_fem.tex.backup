@@ -19,9 +19,9 @@
 
 \maketitle
 
-\begin{abstract}
-In this project we will look at a simple linear second order differential equation.
-\end{abstract}
+% \begin{abstract}
+% In this project we will look at a simple linear second order differential equation.
+% \end{abstract}
 
 \section*{About the problem}
 In this project we will solve a nonlinear diffusion equation using the finite element method and the FEniCS software package.
@@ -40,8 +40,67 @@ approximation in space. The BE discertization gives us
  \rho u^n = \Delta t\nabla\cdot(\alpha(u)\nabla u) +\Delta t f(\mathbf{x},t) +\rho u^{n-1} \\
  \rho u^n - \Delta t\nabla\cdot(\alpha(u)\nabla u) -\Delta t f(\mathbf{x},t) -\rho u^{n-1} = R
 \end{align*}
+we now approximate R on a functionspace $V = span\{\phi_i\}$, where $\phi_i$ denotes the P1 elements, and minimize the error by demanding
+$$
+\big(R,v\big) = 0 \;\;\; \forall \,v\in V
+$$
+which gives us 
+\begin{align*}
+  \rho (u^n,v)  -\Delta t (f(\mathbf{x},t_n),v) -\rho (u^{n-1},v) - \Delta t(\nabla\cdot(\alpha(u)\nabla u^n),v)= 0 
+\end{align*}
+The first three terms are ok for now, but the last term has a double derivative in $u$, which is something we dont want seeing as we are trying to 
+approximate $u$ by P1 elements as $u \simeq \sum\limits_{k}u_k\phi_k$, and the double derivative of a linear function is simply zero. To get around 
+this problem we try to integrate by parts
+\begin{align*}
+ \Delta t(\nabla\cdot(\alpha(u)\nabla u^n),v) = \Delta t\left(\int_\Omega \nabla\cdot(\alpha(u)\nabla u^n)vdx\right)\\
+ =\Delta t \left(\left[\alpha(u)\nabla u v\right]_{\d \Omega}-\int_\Omega \alpha(u)\nabla u^n\nabla vdx\right) = -\Delta t\int_\Omega 
+ \alpha(u)\nabla u^n\nabla vdx
+\end{align*}
+where we have inserted for the boundary conditions $\frac{\d u}{\d n} = \mathbf{n}\cdot\nabla u = 0$ on $\d\Omega$. We have now arrived on a 
+linear variational problem to be solved at each timestep
+\begin{align*}
+  \rho (u^n,v)  -\Delta t (f(\mathbf{x},t_n),v) -\rho (u^{n-1},v) + \Delta t(\alpha(u)\nabla u^n,\nabla v)= 0  \\
+   \underbrace{\rho (u^n,v)   + \Delta t(\alpha(u)\nabla u^n,\nabla v)}_{a(u,v)}=  \underbrace{\Delta t (f(\mathbf{x},t_n),v) +\rho 
+   (u^{n-1},v)}_{L(u,v)}
+\end{align*}
+Notice that we have a nonlinearity in $\alpha(u)$. There are several way to get around this nonlinearity, we will use Picard iteration meaning 
+that we start out with $\alpha(u^{n-1})$ and solve the linear system to get a solution $\tilde{u}^n$. Then we update $\alpha(\tilde{u}^n)$ and 
+solve the system again. We keep dionig this untill $\|\tilde{u}^n-\tilde{u}^{n-1}\|\leq\epsilon$ where $\epsilon$ is a predefined tolerance. 
+Hopefully this converges to the correct solution, and we can set our $\tilde{u}^n = u^n$. Picard iteration leads us to the following linear system 
+for each iteration
+\begin{align*}
+ \rho\int_\Omega u^nvdx+\Delta t\int_\Omega \alpha(u^{n-1})\nabla u^n\nabla vdx = \rho\int_\Omega u^{n-1}vdx +\Delta t\int_\Omega f(x,t_n)vdx
+\end{align*}
+we will now insert for $u \simeq \sum\limits_{k}u_k\phi_k$ and because we are working with an undefined number of cells of potentially variable 
+size we will transform all the integrals to a reference cell where $-1\leq X\leq 1$. We will also do the calculations in 1 dimension, but they 
+easily generalize to multiple dimensions by simply setting each element in say the vector $\mathbf{u}^n$ equal to a vector. The same approach gives 
+us a block matrix for M and K.
 
-\section*{Source code}
+\begin{align*}
+ \rho\sum\limits_{i=1}^{N_x}\int\limits_{-1}^1(\phi_i\phi_j)u^n_idx + \Delta t\sum\limits_{i=1}^{N_x}\int\limits_{-1}^1\alpha(u^{n-1}_i)(\phi'_i\phi'_j)u^ndx = 
+  \rho\sum\limits_{i=1}^{N_x}\int\limits_{-1}^1(\phi_i\phi_j)u^{n-1}_idx + \Delta t \sum\limits_{i=1}^{N_x}\int\limits_{-1}^1f_i(x,t_n)\phi_jdx
+\end{align*}
+
+If we now set $M_{ij} = \rho\int\limits_0^L(\phi_j\phi_i)dx$ and $K_{ij} = \Delta t\int\limits_0^L\alpha(u^{n-1})(\phi'_j\phi'_i)dx $ we get
+\begin{align*}
+M_{ij} = \int\limits_0^L(\phi_j\phi_i)dx \implies M_{00} = \int\limits_{-1}^1(\phi_0\phi_0)dx
+\end{align*}
+We are usin g P1 elements, and so the only nonzero integrals we will get are when $i=j$ and $i\pm1 = j$, meaning M and K will become tridiagonal.\\
+VIS HVA ELEMENTENE BLIR	\\
+we are left with
+\begin{align*}
+M\mathbf{u}^n + K(u^{n-1})\mathbf{u}^n = M\mathbf{u}^{n-1} + \mathbf{b}\\
+\implies \mathbf{u}^n = (M+K(u^{n-1}))^{-1}(M\mathbf{u}^{n-1} -\mathbf{b})
+\end{align*}
+to be solved for each Picard iteration. The crudest Picard iteration will be just one iteration, which is the same as solving the system using
+$\alpha(u^{n-1})\simeq\alpha(u^n)$ and this is our chosen approach.
+
+\section*{Implementation}
+To make the program as general as possible, we will make it dimension independent by providing the number of spatial points on the commandline 
+as $n_x, n_y, n_z$ and choose a unit interval, square or cube accordingly. Also, even though we will only use one Picard iteration, we will 
+implement this as a function where the maximum nuber of iterations is given as an argument. The resulting code can be found in the appendix.
+
+\section*{Verification}
 
 \section*{Analytic solution}
 
