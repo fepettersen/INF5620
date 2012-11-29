@@ -94,14 +94,48 @@ M\mathbf{u}^n + K(u^{n-1})\mathbf{u}^n = M\mathbf{u}^{n-1} + \mathbf{b}\\
 \end{align*}
 to be solved for each Picard iteration. The crudest Picard iteration will be just one iteration, which is the same as solving the system using
 $\alpha(u^{n-1})\simeq\alpha(u^n)$ and this is our chosen approach.
-
+\subsection*{Group Finite Element method}
+We can also approximate the nonlinear term by the group finite element method. Looking at the variational form of our equation and inserting 
+for $u\simeq \sum\limits_{i=1}^N\phi_iu_i$
+\subsection*{Newtons Method}
+As a different approach we can use Newtons method to eestimate the nonlinear term in our equation (\ref{eq}). Newtons method is quite simply 
+an iterative method where we linearize our problem through a first order Taylor expansion, and can be expressed as
+$$
+\mathbf{F}(\mathbf{u}) = 0 \simeq M(u;u^q) = F(u^q) +J(u-u^q)
+$$
+where $J=\nabla F$ which means that $J_{i,j} = {\d F_i \over \d u_j}$. If we reformulate a bit we find
+\begin{align*}
+ J(u^{q+1}-u^q) = -F(u^q) \\
+ u^{q+1} = u^q-J^{-1}F(u^q)
+\end{align*}
+which is the very same formulation as in 1D $x^{k+1} = x^k - {f(x^k) \over f'(x^k)}$
+We wish to apply this on the variational form of the equation which ends up as our F: (notice that we set $\rho=1$)
+\begin{align*}
+ F_i(u) &= \int_\Omega\left(u_i^nv +\Delta t(\alpha(u_i^n)\nabla u_i^n \nabla v) -u_i^{n-1}v -\Delta tf(\mathbf{x},t)v \right)d\Omega \\
+ J_{i,j} &= {\d \over \d u_j^n}F_i \\
+ J_{i,j} &= \int_\Omega\left(\phi_i\phi_j +\Delta t(\alpha'(u_i^n)\phi_i\nabla u_i^n \nabla \phi_j + \alpha(u_i^n)\nabla \phi_i\nabla\phi_j) \right)d\Omega
+\end{align*}
+where we have used $u_i^n = \phi_i u_i^n \implies {\d \over \d u_j^n}u_i^n = \phi_i$, $v=\phi_j$ and ${\d \over \d u_j^n}\alpha(u_i^n) = 
+\alpha'(u_i^n)\phi_i$
 \section*{Implementation}
 To make the program as general as possible, we will make it dimension independent by providing the number of spatial points on the commandline 
 as $n_x, n_y, n_z$ and choose a unit interval, square or cube accordingly. Also, even though we will only use one Picard iteration, we will 
 implement this as a function where the maximum nuber of iterations is given as an argument. The resulting code can be found in the appendix.
 
 \section*{Verification}
+For the first verification of the program we will assume $\rho = \alpha(u) = 1$, $f(\mathbf{x},t) = 0$ and $I(\mathbf{x}) = \cos(\pi x)$. We 
+will wrok on the domain $\Omega = [0,1]\times[0,1]$. This should give an analytic solution of $u(x,y,t) = e^{-\pi^2t}\cos(\pi x)$
 
+\subsection*{Errors}
+As in any (nummerical) approximation there will be an error in our solution. We can distinguish two types of errors, there is the error we do in 
+the approximation of the derivatives, and there is the nummerical error.\\
+Our approximation using the Backward Euler scheme has an error which goes like $\mathcal{O}(\Delta t)$ for other reasons the spatial error goes 
+like $\mathcal{O}(\Delta x^2)$. Other potential errors which will arise in the FEniCS program are errors due to loss of prescision in the 
+nummerical integration we do upon assembly of the matrices M and K. Depending on what kind of nummerical integration we use, the error from integration 
+could be $\mathcal{O}(\Delta x)$ for the rectangle (midpoint) rule or it could even be zero if the solution is a polynomial of degree $2n-1$ 
+and we integrate by some form of Gaussian quadrature. $n$ is here the order of elements used.
+There is allways a possibillity of loosing nummerical precision because of adding a small and a large number since we only have 16 valid decimals.
+In our case we also have an obvious error in the approximation of the nonlinear term. 
 \section*{Analytic solution}
 
 \section*{Results}
