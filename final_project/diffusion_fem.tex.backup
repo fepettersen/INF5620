@@ -85,7 +85,7 @@ If we now set $M_{ij} = \rho\int\limits_0^L(\phi_j\phi_i)dx$ and $K_{ij} = \Delt
 \begin{align*}
 M_{ij} = \int\limits_0^L(\phi_j\phi_i)dx \implies M_{00} = \int\limits_{-1}^1(\phi_0\phi_0)dx
 \end{align*}
-We are usin g P1 elements, and so the only nonzero integrals we will get are when $i=j$ and $i\pm1 = j$, meaning M and K will become tridiagonal.\\
+We are using P1 elements, and so the only nonzero integrals we will get are when $i=j$ and $i\pm1 = j$, meaning M and K will become tridiagonal.\\
 VIS HVA ELEMENTENE BLIR	\\
 we are left with
 \begin{align*}
@@ -96,27 +96,40 @@ to be solved for each Picard iteration. The crudest Picard iteration will be jus
 $\alpha(u^{n-1})\simeq\alpha(u^n)$ and this is our chosen approach.
 \subsection*{Group Finite Element method}
 We can also approximate the nonlinear term by the group finite element method. Looking at the variational form of our equation and inserting 
-for $u\simeq \sum\limits_{i=1}^N\phi_iu_i$
+for $u\simeq \sum\limits_{i=1}^N\phi_iu_i$ we get the following
+\begin{align*}
+\rho\int_\Omega \sum\limits_i(\phi_i\phi_j)u_i^ndx+\Delta t\int_\Omega \alpha(\sum\limits_i\phi_iu_i^{n-1})\sum\limits_i(\nabla\phi_i\nabla 
+\phi_j)u_i^ndx = \rho\int_\Omega \sum\limits_i(\phi_i\phi_j)u_i^{n-1}dx +\Delta t\int_\Omega f(x,t_n)vdx
+\end{align*}
+If we now set $\alpha(\sum\limits_i\phi_iu_i^{n-1})\approx \sum\limits_i\phi_i\alpha(u_i^{n-1})$ we are left with a nasty beast!
+
 \subsection*{Newtons Method}
-As a different approach we can use Newtons method to eestimate the nonlinear term in our equation (\ref{eq}). Newtons method is quite simply 
+As a different approach we can use Newtons method to estimate the nonlinear term in our equation (\ref{eq}). Newtons method is quite simply 
 an iterative method where we linearize our problem through a first order Taylor expansion, and can be expressed as
 $$
 \mathbf{F}(\mathbf{u}) = 0 \simeq M(u;u^q) = F(u^q) +J(u-u^q)
 $$
-where $J=\nabla F$ which means that $J_{i,j} = {\d F_i \over \d u_j}$. If we reformulate a bit we find
+where $J=\nabla F$ which means that $J_{i,j} = {\d F_i \over \d u_j}$ and $\mathbf{F}(\mathbf{u})$ is the equation we want to solve 
+only written on a general form. If we reformulate a bit we find
 \begin{align*}
  J(u^{q+1}-u^q) = -F(u^q) \\
  u^{q+1} = u^q-J^{-1}F(u^q)
 \end{align*}
 which is the very same formulation as in 1D $x^{k+1} = x^k - {f(x^k) \over f'(x^k)}$
 We wish to apply this on the variational form of the equation which ends up as our F: (notice that we set $\rho=1$)
-\begin{align*}
- F_i(u) &= \int_\Omega\left(u_i^nv +\Delta t(\alpha(u_i^n)\nabla u_i^n \nabla v) -u_i^{n-1}v -\Delta tf(\mathbf{x},t)v \right)d\Omega \\
+\begin{align}
+\nonumber
+F_i(u) &= \int_\Omega\left(u_i^nv +\Delta t(\alpha(u_i^n)\nabla u_i^n \nabla v) -u_i^{n-1}v -\Delta tf(\mathbf{x},t)v 
+ \right)d\Omega \\ \nonumber
  J_{i,j} &= {\d \over \d u_j^n}F_i \\
- J_{i,j} &= \int_\Omega\left(\phi_i\phi_j +\Delta t(\alpha'(u_i^n)\phi_i\nabla u_i^n \nabla \phi_j + \alpha(u_i^n)\nabla \phi_i\nabla\phi_j) \right)d\Omega
-\end{align*}
+ J_{i,j} -&= \int_\Omega\left(\phi_i\phi_j +\Delta t(\alpha'(u_i^n)\phi_i\nabla u_i^n \nabla \phi_j + 
+ \alpha(u_i^n)\nabla \phi_i\nabla\phi_j) \right)d\Omega \label{jacobian}
+\end{align}
 where we have used $u_i^n = \phi_i u_i^n \implies {\d \over \d u_j^n}u_i^n = \phi_i$, $v=\phi_j$ and ${\d \over \d u_j^n}\alpha(u_i^n) = 
-\alpha'(u_i^n)\phi_i$
+\alpha'(u_i^n)\phi_i$. And there we have the expressions for the entries in the jacobian matrix we can use for a Newtons method 
+on our equation. The remainig steps are to assemble the linear problem, and iterate in the same way as we did with Picard iteration. 
+Theese are both tasks well suited for the FEniCS software.\\ 
+Simplfying (\ref{jacobian}) to one spatial dimension lets us 
 \section*{Implementation}
 To make the program as general as possible, we will make it dimension independent by providing the number of spatial points on the commandline 
 as $n_x, n_y, n_z$ and choose a unit interval, square or cube accordingly. Also, even though we will only use one Picard iteration, we will 
