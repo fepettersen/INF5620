@@ -98,10 +98,31 @@ $\alpha(u^{n-1})\simeq\alpha(u^n)$ and this is our chosen approach.
 We can also approximate the nonlinear term by the group finite element method. Looking at the variational form of our equation and inserting 
 for $u\simeq \sum\limits_{i=1}^N\phi_iu_i$ we get the following
 \begin{align*}
-\rho\int_\Omega \sum\limits_i(\phi_i\phi_j)u_i^ndx+\Delta t\int_\Omega \alpha(\sum\limits_i\phi_iu_i^{n-1})\sum\limits_i(\nabla\phi_i\nabla 
-\phi_j)u_i^ndx = \rho\int_\Omega \sum\limits_i(\phi_i\phi_j)u_i^{n-1}dx +\Delta t\int_\Omega f(x,t_n)vdx
+\rho\int_\Omega \sum\limits_i(\phi_i\phi_j)u_i^nd\Omega+\Delta t\int_\Omega \alpha(\sum\limits_i\phi_iu_i^{n})\sum\limits_j(\nabla\phi_j\nabla 
+\phi_k)u_j^nd\Omega = \rho\int_\Omega \sum\limits_i(\phi_i\phi_j)u_i^{n-1}d\Omega +\Delta t\int_\Omega f(x,t_n)vd\Omega
 \end{align*}
-If we now set $\alpha(\sum\limits_i\phi_iu_i^{n-1})\approx \sum\limits_i\phi_i\alpha(u_i^{n-1})$ we are left with a nasty beast!
+If we now set $\alpha(\sum\limits_i\phi_iu_i^{n})\approx \sum\limits_i\phi_i\alpha(u_i^{n})$ and focus on the integral with $\alpha$, we are left with
+(in one dimension)
+\begin{align*}
+ \int_\Omega \sum\limits_i\phi_i\alpha(u_i^{n})\sum\limits_j(\phi'_j\phi'_k)u_j^ndx
+\end{align*}
+Which we transfer to a reference element $X\in[-1,1]$ where ${d \phi \over d X} = {d\phi \over dX}{dX \over dx} = {d\phi \over dX}{2\over h}$ 
+and ${dx\over dX}={h\over 2}$. Theese calculations will result in an element matrix which we can assemble so that we get a linear system
+\begin{align*}
+ {(-1)^r(-1)^s\over h}\int\limits_{-1}^1\alpha(u_i)\phi_i\phi'_j\phi'_kdX \\
+ \approx{(-1)^r(-1)^s\over 2h}\Big(\underbrace{\sum\limits_r\alpha(u_{i+r})\cdot\phi_{i+r}}_{\neq0 \,\text{when}\, r=1} +
+ \underbrace{\sum\limits_s\alpha(u_{i+s})\cdot\phi_{i+s}}_{\neq0 \,\text{when}\, s=0}\Big) \\
+ \implies {1\over 2h}(\alpha(u_{i+1})+\alpha(u_i))\cdot\left[\begin{array}{c c}
+                                                        1&-1\\
+                                                        -1&1
+                                                       \end{array}\right] =K^{(i)}
+\end{align*}
+
+The entire linear system is then
+$$
+M\mathbf{u}^n +\Delta tK\mathbf{u}^n = M\mathbf{u}^{n-1} +\mathbf{b}
+$$
+where M is the same matrix as in (SOMEREFERENCE). This means that the i'th equation in the system is
 
 \subsection*{Newtons Method}
 As a different approach we can use Newtons method to estimate the nonlinear term in our equation (\ref{eq}). Newtons method is quite simply 
