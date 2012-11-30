@@ -143,7 +143,7 @@ We wish to apply this on the variational form of the equation which ends up as o
 F_i(u) &= \int_\Omega\left(u_i^nv +\Delta t(\alpha(u_i^n)\nabla u_i^n \nabla v) -u_i^{n-1}v -\Delta tf(\mathbf{x},t)v 
  \right)d\Omega \\ \nonumber
  J_{i,j} &= {\d \over \d u_j^n}F_i \\
- J_{i,j} -&= \int_\Omega\left(\phi_i\phi_j +\Delta t(\alpha'(u_i^n)\phi_i\nabla u_i^n \nabla \phi_j + 
+ J_{i,j} &= \int_\Omega\left(\phi_i\phi_j +\Delta t(\alpha'(u_i^n)\phi_i\nabla u_i^n \nabla \phi_j + 
  \alpha(u_i^n)\nabla \phi_i\nabla\phi_j) \right)d\Omega \label{jacobian}
 \end{align}
 where we have used $u_i^n = \phi_i u_i^n \implies {\d \over \d u_j^n}u_i^n = \phi_i$, $v=\phi_j$ and ${\d \over \d u_j^n}\alpha(u_i^n) = 

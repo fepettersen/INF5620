@@ -36,8 +36,8 @@ f = Constant(0.0)
 u = TrialFunction(V)
 v = TestFunction(V)
 
-u0 = Expression('exp(-1/(2*sigma*sigma)*(x[0]*x[0]+x[1]*x[1]))',sigma=sigma)
-#u0 = Expression('cos(pi*x[0])',pi=pi)
+#u0 = Expression('exp(-1/(2*sigma*sigma)*(x[0]*x[0]+x[1]*x[1]))',sigma=sigma)
+u0 = Expression('cos(pi*x[0])',pi=pi)
 #u0 = Constant(0.0)
 u_1 = interpolate(u0,V)
 
@@ -69,21 +69,21 @@ while t<=T:
 	t+=dt
 	u_1.assign(u)
 	u_e = interpolate(exact, V)
+	'''
 	if counter ==25:
 		viz_v = plot(u_e,title='exact',basename ='exact')
 		viz_u = plot(u,title='nummeric',basename='nummeric')
 		interactive()
 		#viz_u.update(u)
 		#viz_u.write_ps('nummeric',format='pdf')
-
+	'''
 	maxdiff = np.abs(u_e.vector().array()-u.vector().array()).max()
 	exact.t=t
 	#print 'Max error, t=%.2f: %-10.17f' % (t, maxdiff)
 	e = u_e.vector().array() - u.vector().array()
 	E = np.sqrt(np.sum(e**2)/u.vector().array().size)
 	counter +=1
-	if t==0.05:
-		print E/dt
+	print "error: ",E/dt," t = ",t
 
 '''
 exp(-pi*pi*t)*cos(pi*x[0])

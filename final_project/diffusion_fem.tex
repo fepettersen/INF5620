@@ -160,7 +160,9 @@ implement this as a function where the maximum nuber of iterations is given as a
 
 \section*{Verification}
 For the first verification of the program we will assume $\rho = \alpha(u) = 1$, $f(\mathbf{x},t) = 0$ and $I(\mathbf{x}) = \cos(\pi x)$. We 
-will wrok on the domain $\Omega = [0,1]\times[0,1]$. This should give an analytic solution of $u(x,y,t) = e^{-\pi^2t}\cos(\pi x)$
+will wrok on the domain $\Omega = [0,1]\times[0,1]$. This should give an analytic solution of $u(x,y,t) = e^{-\pi^2t}\cos(\pi x)$. Since we have used 
+the Backward Euler discertization in time we should have an error of $\Delta t$, and therefore also a first order convergence. \\
+
 
 \subsection*{Errors}
 As in any (nummerical) approximation there will be an error in our solution. We can distinguish two types of errors, there is the error we do in 
@@ -172,7 +174,6 @@ could be $\mathcal{O}(\Delta x)$ for the rectangle (midpoint) rule or it could e
 and we integrate by some form of Gaussian quadrature. $n$ is here the order of elements used.
 There is allways a possibillity of loosing nummerical precision because of adding a small and a large number since we only have 16 valid decimals.
 In our case we also have an obvious error in the approximation of the nonlinear term. 
-\section*{Analytic solution}
 
 \section*{Results}
 
