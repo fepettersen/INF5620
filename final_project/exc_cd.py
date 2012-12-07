@@ -26,7 +26,7 @@ def picard(u,u_1,a,L,b,maxiter,tol=1e-5,order=2):
 
 maxiter = 1
 rho = 1.0
-dt = 0.01
+dt = 0.1
 sigma = 0.1
 
 V = FunctionSpace(mesh,'Lagrange',degree)
@@ -83,7 +83,7 @@ while t<=T:
 	e = u_e.vector().array() - u.vector().array()
 	E = np.sqrt(np.sum(e**2)/u.vector().array().size)
 	counter +=1
-	print "error: ",E/dt," t = ",t
+	print "error: ",E," t = ",t
 
 '''
 exp(-pi*pi*t)*cos(pi*x[0])

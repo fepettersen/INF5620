@@ -151,7 +151,32 @@ where we have used $u_i^n = \phi_i u_i^n \implies {\d \over \d u_j^n}u_i^n = \ph
 on our equation. The remainig steps are to assemble the linear problem, and iterate in the same way as we did with Picard iteration. 
 Theese are both tasks well suited for the FEniCS software.\\ 
 Simplfying (\ref{jacobian}) to one spatial dimension lets us compute the actual entries in the jacobian in a simple manner 
-so that we can compare with something else.
+so that we can compare with something else. The simplified version is
+\begin{align*}
+  J_{i,j} = \int_x\left(\phi_i\phi_j +\Delta t(\alpha'(u_i^n)\phi_i\cdot(u_i^n)'\phi'_j + 
+ \alpha(u_i^n)\phi'_i\phi'_j) \right)dx \\
+\end{align*}
+We notice that we have allready calculated the first and last term and so we can focus on the middle term. Again we will integrate by the trapezoidal rule.
+\begin{align*}
+ \int\limits_{-1}^1\alpha'(u^n)\phi_i\cdot(u^n)'{2\over h}\phi'_j{h\over2}dX  = {(-1)^r\over h}\Big(\alpha'(u_{i+s}^n)(u_i^n)'\delta_{s_0}\left|_{X=-1} +
+ \alpha'(u_{i+s}^n)(u_i^n)'\delta_{s_1}\right|_{X=1}\Big) 
+\end{align*}
+we approximate the derivative of u by $(u^n_i)' \simeq {1\over2}(u^n_i-u^n_{i+1})$ and tidy up the expression a bit to get
+\begin{align*}
+ {1\over h}(u^n_i-u^n_{i+1})\left[
+ \begin{array}{c c}
+  \alpha'(u^n_i) & \alpha'(u^n_{i+1})\\
+  -\alpha'(u^n_i) & -\alpha'(u^n_{i+1})
+ \end{array}
+\right]
+\end{align*}
+Combining all of the entries then gives us
+\begin{align*}
+ J_{i,i} &= {1\over h}\left((u^n_i-u^n_{i+1})(\alpha'(u^n_i)-\alpha'(u^n_{i+1})) +(\alpha(u^n_i)+\alpha(u^n_{i+1}))+{2\over3} \right)\\
+ J_{i,i+1} &=  {1\over h}\left(-(u^n_i-u^n_{i+1})\alpha'(u^n_{i+1}) +{1\over2}(\alpha(u^n_i)+\alpha(u^n_{i+1}))+{1\over6}\right)\\
+ J_{i,i-1} &=  {1\over h}\left((u^n_i-u^n_{i+1})\alpha'(u^n_{i}) +{1\over2}(\alpha(u^n_i)+\alpha(u^n_{i+1}))+{1\over6}\right)
+\end{align*}
+
 
 \section*{Implementation}
 To make the program as general as possible, we will make it dimension independent by providing the number of spatial points on the commandline 
@@ -160,7 +185,9 @@ implement this as a function where the maximum nuber of iterations is given as a
 
 \section*{Verification}
 For the first verification of the program we will assume $\rho = \alpha(u) = 1$, $f(\mathbf{x},t) = 0$ and $I(\mathbf{x}) = \cos(\pi x)$. We 
-will wrok on the domain $\Omega = [0,1]\times[0,1]$. This should give an analytic solution of $u(x,y,t) = e^{-\pi^2t}\cos(\pi x)$
+will wrok on the domain $\Omega = [0,1]\times[0,1]$. This should give an analytic solution of $u(x,y,t) = e^{-\pi^2t}\cos(\pi x)$. Since we have used 
+the Backward Euler discertization in time we should have an error of $\Delta t$, and therefore also a first order convergence. \\
+
 
 \subsection*{Errors}
 As in any (nummerical) approximation there will be an error in our solution. We can distinguish two types of errors, there is the error we do in 
@@ -172,7 +199,6 @@ could be $\mathcal{O}(\Delta x)$ for the rectangle (midpoint) rule or it could e
 and we integrate by some form of Gaussian quadrature. $n$ is here the order of elements used.
 There is allways a possibillity of loosing nummerical precision because of adding a small and a large number since we only have 16 valid decimals.
 In our case we also have an obvious error in the approximation of the nonlinear term. 
-\section*{Analytic solution}
 
 \section*{Results}
 

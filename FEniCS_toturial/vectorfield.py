@@ -10,6 +10,6 @@ a = inner(w,v)*dx
 L = inner(nabla_grad(w),nabla_grad(v))*dx
 
 grad_u = Function(V_g)
-solve(a == L, grad_u)
+solve(a == L,  grad_u)
 
 plot(grad_u,title='grad(u)')
