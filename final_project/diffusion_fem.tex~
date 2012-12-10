@@ -22,8 +22,9 @@
 % \begin{abstract}
 % In this project we will look at a simple linear second order differential equation.
 % \end{abstract}
-
-\section*{About the problem}
+\tableofcontents
+\newpage
+\section{About the problem}
 In this project we will solve a nonlinear diffusion equation using the finite element method and the FEniCS software package.
 More precicely we will be looking at the equation
 \begin{equation}\label{eq}
@@ -32,7 +33,7 @@ More precicely we will be looking at the equation
 where $\rho$ is a constant, $\alpha(u)$ is a known function of u, and where we have the initial condition $u(\mathbf{x},0) = I(\mathbf{x})$, 
 and Neuman boundary conditions $\frac{\d u}{\d n} = 0$.
 
-\section*{Discretization}
+\section{Discretization}\label{discretization}
 In order to solve equation (\ref{eq}) we will need to discretize it. The standard approach is then to pick a nummerical approximation to the 
 derivatives. We will use a finite difference discertization in time, more specifically the Backward Euler (BE) discretization, and a finite element 
 approximation in space. The BE discertization gives us
@@ -63,7 +64,7 @@ linear variational problem to be solved at each timestep
    \underbrace{\rho (u^n,v)   + \Delta t(\alpha(u)\nabla u^n,\nabla v)}_{a(u,v)}=  \underbrace{\Delta t (f(\mathbf{x},t_n),v) +\rho 
    (u^{n-1},v)}_{L(u,v)}
 \end{align*}
-Notice that we have a nonlinearity in $\alpha(u)$. There are several way to get around this nonlinearity, we will use Picard iteration meaning 
+Notice that we have a nonlinearity in $\alpha(u)$. There are several ways to get around this nonlinearity, we will use Picard iteration, meaning 
 that we start out with $\alpha(u^{n-1})$ and solve the linear system to get a solution $\tilde{u}^n$. Then we update $\alpha(\tilde{u}^n)$ and 
 solve the system again. We keep dionig this untill $\|\tilde{u}^n-\tilde{u}^{n-1}\|\leq\epsilon$ where $\epsilon$ is a predefined tolerance. 
 Hopefully this converges to the correct solution, and we can set our $\tilde{u}^n = u^n$. Picard iteration leads us to the following linear system 
@@ -86,7 +87,47 @@ If we now set $M_{ij} = \rho\int\limits_0^L(\phi_j\phi_i)dx$ and $K_{ij} = \Delt
 M_{ij} = \int\limits_0^L(\phi_j\phi_i)dx \implies M_{00} = \int\limits_{-1}^1(\phi_0\phi_0)dx
 \end{align*}
 We are using P1 elements, and so the only nonzero integrals we will get are when $i=j$ and $i\pm1 = j$, meaning M and K will become tridiagonal.\\
-VIS HVA ELEMENTENE BLIR	\\
+\begin{align*}
+ \int\limits_0^Lu_j^{n+1}vdx -2\int\limits_0^Lu_j^nvdx + \int\limits_0^Lu_j^{n-1}vdx &+ \int\limits_0^Lu_x^nv_xdx    = \\
+\sum\limits_j^{N_x}\int\limits_0^L(\phi_j\phi_i)c_j^{n+1}dx - 2\sum\limits_j^{N_x}\int\limits_0^L(\phi_j\phi_i)c_j^{n}dx &+ 
+  \sum\limits_j^{N_x}\int\limits_0^L(\phi_j\phi_i)c_j^{n-1}dx - C^2\sum\limits_j^{N_x}\int\limits_0^L(\phi'_j\phi'_i)c_j^{n}dx
+\end{align*}
+If we now set $M_{ij} = \int\limits_0^L(\phi_j\phi_i)dx$ and $K_{ij} = \int\limits_0^L(\phi'_j\phi'_i)dx $ we get
+\begin{align*}
+M_{ii} =  \int\limits_{-1}^1(\phi_i\phi_i)dx, \;\;\;
+M_{ij} = M_{ji} = \int\limits_{-1}^1(\phi_j\phi_i)dx \\
+K_{ii} =  \int\limits_{-1}^1(\phi'_i\phi'_i)dx, \;\;\;
+K_{ij} = K_{ji} = \int\limits_{-1}^1(\phi'_j\phi'_i)dx
+\end{align*}
+Remember that for every $M_{ii}$ and $K_{ii}$ entry there are two possible function combinations because within each element there 
+are defined two functions say $\phi_0 = \frac{1}{2}(1-x)$ and $\phi_1 = \frac{1}{2}(1+x)$. This means that for every diagonal entry 
+we need to calculate the sum of two integrals (or just multiply by 2 since they are equal). The integrals become
+\begin{align*}
+M_{ii} = \int\limits_{-1}^1(\phi_i\phi_i)dX = 2\frac{h}{8}\int\limits_{-1}^1(1-X)^2dX = 2\frac{h}{8}\cdot\frac{8}{3} = \frac{2h}{3}\\
+M_{ij} = \int\limits_{-1}^1(\phi_i\phi_j)dX = \frac{h}{8}\int\limits_{-1}^1(1-X)(1+X)dX = \frac{h}{8}\cdot\frac{4}{3} = \frac{h}{6}\\
+K_{ii} = 2\int\limits_{-1}^1\phi'_i\phi'_idX = 2\int\limits_{-1}^1(\frac{2}{h}\phi'_i\frac{2}{h}\phi'_i)\frac{h}{2}dX
+ = 2\frac{2}{h}\int\limits_{-1}^1\frac{-1}{2}\frac{-1}{2}dX = 2\frac{1}{h}\\
+K_{ij} = \int\limits_{-1}^1\phi'_i\phi'_jdX = \frac{2}{h}\int\limits_{-1}^1\frac{-1}{2}\frac{1}{2}dX = \frac{-1}{h}
+\end{align*}
+This makes our matrices
+\begin{equation*}
+ M = \frac{h}{6}\left(\begin{array}{c c c c c c}
+    4 & 1 & 0 & \dots & & 0 \\
+    1 & 4 & 1 & 0 &\dots & \vdots \\
+    0 & \ddots & \ddots & \ddots & 0& \\
+     & & & & & \\
+     0 & \dots & 0 & 1 & 4 & 1\\
+     0 & & \dots & 0 & 1 & 4
+ \end{array}\right), \:\;
+ K = \frac{1}{h}\left(\begin{array}{c c c c c c}
+          2 & -1 & 0 & \dots & & 0 \\
+	  -1 & 2 & -1 & 0 &\dots & \vdots \\
+	  0 & \ddots & \ddots & \ddots & 0& \\
+	  & & & & & \\
+	  0 & \dots & 0 & -1 & 2 & -1\\
+	  0 & & \dots & 0 & -1 & 2
+                      \end{array}\right)
+\end{equation*}
 we are left with
 \begin{align*}
 M\mathbf{u}^n + K(u^{n-1})\mathbf{u}^n = M\mathbf{u}^{n-1} + \mathbf{b}\\
@@ -94,7 +135,7 @@ M\mathbf{u}^n + K(u^{n-1})\mathbf{u}^n = M\mathbf{u}^{n-1} + \mathbf{b}\\
 \end{align*}
 to be solved for each Picard iteration. The crudest Picard iteration will be just one iteration, which is the same as solving the system using
 $\alpha(u^{n-1})\simeq\alpha(u^n)$ and this is our chosen approach.
-\subsection*{Group Finite Element method}
+\subsection{Group Finite Element method}
 We can also approximate the nonlinear term by the group finite element method. Looking at the variational form of our equation and inserting 
 for $u\simeq \sum\limits_{i=1}^N\phi_iu_i$ we get the following
 \begin{align*}
@@ -123,8 +164,33 @@ $$
 M\mathbf{u}^n +\Delta tK\mathbf{u}^n = M\mathbf{u}^{n-1} +\mathbf{b}
 $$
 where M is the same matrix as in (SOMEREFERENCE). This means that the i'th equation in the system is
+\begin{align*}
+ {h\over6}\big(u^{n}_{i+1}+4u^{n}_{i} +u^{n}_{i-1}\big) -{\Delta t\over 2h}\big(\alpha(u^{n}_{i+1})+\alpha(u^{n}_{i})\big)\big(u^{n}_{i+1}
+ -2u^{n}_{i} +u^{n}_{i-1}\big) -{h\over6}\big(u^{n-1}_{i+1}+4u^{n-1}_{i}+u^{n-1}_{i-1}\big) = \Delta tf(x_i,t_n)
+\end{align*}
+If we massage this expression a bit we can get it on another form.
+\begin{align*}
+ {u^{n}_{i}-u^{n-1}_{i}\over \Delta t} +{u^{n}_{i+1}-u^{n-1}_{i+1}\over 6\Delta t} -{2(u^{n}_{i}-u^{n-1}_{i})\over 6\Delta t} +
+ {u^{n}_{i-1}-u^{n-1}_{i-1}\over6\Delta t} \\
+ = {1\over 2h}\big(\alpha(u^{n}_{i+1})+\alpha(u^{n}_{i})\big)\big(u^{n}_{i+1}-2u^{n}_{i} +u^{n}_{i-1}\big) +f(x_i,t_n)
+\end{align*}
+which looks suspiciously like a finite difference scheme. In fact we recognize the left hand side as (if we assume $h = \Delta x$)
+\begin{align*}
+ D_tu +{1\over6}D_t\Delta x^2D_xD_xu
+\end{align*}
+Looking a bit closer at the right hand side, this looks like a normal second order derivative of u wrt x multiplied by the average of 
+$\alpha(u^n_{i+1/2})$ and of course the source term. Now, our equation has a right hand side on the form (in one spatial dimension)
+\begin{equation*}
+ {\d u\over\d x}\alpha(u){\d u\over\d x}u
+\end{equation*}
+and so it would seem that if we (for some reason) approximate this with $ {\d u\over\d x}\alpha(u){\d u\over\d x}u \approx \alpha(\bar{u}) 
+{\d^2 u\over \d x^2}$ we arrive at a finite difference scheme equivalent to using the group finite element method
+\begin{align*}
+ \left[D_t\left(u +{1\over6}\Delta x^2D_xD_xu\right)= \alpha(\bar{u})D_xD_xu +f\right]^n_i
+ \end{align*}
 
-\subsection*{Newtons Method}
+
+\subsection{Newtons Method}
 As a different approach we can use Newtons method to estimate the nonlinear term in our equation (\ref{eq}). Newtons method is quite simply 
 an iterative method where we linearize our problem through a first order Taylor expansion, and can be expressed as
 $$
@@ -170,27 +236,47 @@ we approximate the derivative of u by $(u^n_i)' \simeq {1\over2}(u^n_i-u^n_{i+1}
  \end{array}
 \right]
 \end{align*}
-Combining all of the entries then gives us
+Combining all of the entries then gives us the Jacobian
 \begin{align*}
- J_{i,i} &= {1\over h}\left((u^n_i-u^n_{i+1})(\alpha'(u^n_i)-\alpha'(u^n_{i+1})) +(\alpha(u^n_i)+\alpha(u^n_{i+1}))+{2\over3} \right)\\
- J_{i,i+1} &=  {1\over h}\left(-(u^n_i-u^n_{i+1})\alpha'(u^n_{i+1}) +{1\over2}(\alpha(u^n_i)+\alpha(u^n_{i+1}))+{1\over6}\right)\\
- J_{i,i-1} &=  {1\over h}\left((u^n_i-u^n_{i+1})\alpha'(u^n_{i}) +{1\over2}(\alpha(u^n_i)+\alpha(u^n_{i+1}))+{1\over6}\right)
+ J_{i,i} &= {\Delta t\over h}\left((u^n_i-u^n_{i+1})(\alpha'(u^n_i)-\alpha'(u^n_{i+1})) +(\alpha(u^n_i)+\alpha(u^n_{i+1}))+{2\over3\Delta t} \right)\\
+ J_{i,i+1} &=  {\Delta t\over h}\left(-(u^n_i-u^n_{i+1})\alpha'(u^n_{i+1}) +{1\over2}(\alpha(u^n_i)+\alpha(u^n_{i+1}))+{1\over6\Delta t}\right)\\
+ J_{i,i-1} &=  {\Delta t\over h}\left((u^n_i-u^n_{i+1})\alpha'(u^n_{i}) +{1\over2}(\alpha(u^n_i)+\alpha(u^n_{i+1}))+{1\over6\Delta t}\right)
 \end{align*}
 
 
-\section*{Implementation}
+\section{Implementation}
 To make the program as general as possible, we will make it dimension independent by providing the number of spatial points on the commandline 
 as $n_x, n_y, n_z$ and choose a unit interval, square or cube accordingly. Also, even though we will only use one Picard iteration, we will 
 implement this as a function where the maximum nuber of iterations is given as an argument. The resulting code can be found in the appendix.
 
-\section*{Verification}
+\section{Verification}
 For the first verification of the program we will assume $\rho = \alpha(u) = 1$, $f(\mathbf{x},t) = 0$ and $I(\mathbf{x}) = \cos(\pi x)$. We 
 will wrok on the domain $\Omega = [0,1]\times[0,1]$. This should give an analytic solution of $u(x,y,t) = e^{-\pi^2t}\cos(\pi x)$. Since we have used 
 the Backward Euler discertization in time we should have an error of $\Delta t$, and therefore also a first order convergence. \\
+We can then use the method of manifactured solutions to do another verification of the program. Restricting ourselves to one spatial dimension we 
+choose our solution to be 
+\begin{equation}
+ u(x,t) = t\int\limits_0^xq(1-q)dq = tx^2\left({1\over2}-{x\over3}\right)
+\end{equation}
+and our $\alpha(u) = 1+u^2$. We can then calculate a function $f(x,t)$ which makes the solution fit the equation. This solution is given from an 
+interactive sympy session as 
+\begin{equation}
+ f(x,t) = \rho x^2\left({1\over2}-{x\over3}\right) +x^4t^3\left({8.0x^3\over9} -{28x^2\over9} +{7x\over2} -{5\over4}\right) +t(2x -1)
+\end{equation}
+Plugging this into FEniCS and comparing the nummeric and analytic solution gives the absolute max error as indicated in the output below.
+\begin{lstlisting}
+fredriep@WorkStation:~/uio/INF5620/final_project$ python exc_cd.py 1 24
+Calling FFC just-in-time (JIT) compiler, this may take some time.
+error:  0.00295070292965  t =  0.2
+error:  0.00443136110942  t =  0.3
+error:  0.00517399129169  t =  0.4
+error:  0.00554256396031  t =  0.5
+error:  0.00571840378958  t =  0.6
+\end{lstlisting}
 
 
-\subsection*{Errors}
-As in any (nummerical) approximation there will be an error in our solution. We can distinguish two types of errors, there is the error we do in 
+\subsection{Errors}
+As in any (numerical) approximation there will be an error in our solution. We can distinguish two types of errors, there is the error we do in 
 the approximation of the derivatives, and there is the nummerical error.\\
 Our approximation using the Backward Euler scheme has an error which goes like $\mathcal{O}(\Delta t)$ for other reasons the spatial error goes 
 like $\mathcal{O}(\Delta x^2)$. Other potential errors which will arise in the FEniCS program are errors due to loss of prescision in the 
@@ -200,7 +286,34 @@ and we integrate by some form of Gaussian quadrature. $n$ is here the order of e
 There is allways a possibillity of loosing nummerical precision because of adding a small and a large number since we only have 16 valid decimals.
 In our case we also have an obvious error in the approximation of the nonlinear term. 
 
-\section*{Results}
-
-\section*{Final comments}
+\section{Results}
+As a final experiment we shall simulate the nonlinear equation using Picard iteration with one iteration as described in section 
+\ref{discretization} and the Backward Euler scheme on the unit square. The initial contition on the system is
+\begin{equation}
+ u(x,y,0) = I(x,y)=\exp\big(-{1\over2\sigma^2}(x^2+y^2)\big)
+\end{equation}
+and the nonlinear term is $\alpha(u) = 1+\beta u^2$. The expected behavioure of this system (at least without the nonlinear term) is that it 
+should simply die down. I have included some plots from this simulation in figures \ref{simulation_1}, \ref{simulation_2} and \ref{simulation_3}.
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.6]{nonlinear_simulation_0.png}
+\caption{The initial condition on the system}
+\label{simulation_1}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.6]{nonlinear_simulation_1.png}
+\caption{The system early in the simulation (t = 0.6)}
+\label{simulation_2}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.6]{nonlinear_simulation_3.png}
+\caption{The system in the end of the simulation (t=1.4). Noti}
+\label{simulation_3}
+\end{figure}
+\section{Final comments}
+\appendix
+\section{Source code}
+\lstinputlisting{exc_cd.py}
 \end{document}

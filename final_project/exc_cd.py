@@ -8,8 +8,7 @@ d = len(divisions) -1
 domain_type = [UnitInterval,UnitSquare,UnitCube]
 mesh = domain_type[d](*divisions)
 
-def alpha(u):
-	beta = 1.3
+def alpha(u,beta = 1.3):
 	return 1.0+beta*u**2
 
 def picard(u,u_1,a,L,b,maxiter,tol=1e-5,order=2):
@@ -26,7 +25,7 @@ def picard(u,u_1,a,L,b,maxiter,tol=1e-5,order=2):
 
 maxiter = 1
 rho = 1.0
-dt = 0.1
+dt = 0.05
 sigma = 0.1
 
 V = FunctionSpace(mesh,'Lagrange',degree)
@@ -36,8 +35,8 @@ f = Constant(0.0)
 u = TrialFunction(V)
 v = TestFunction(V)
 
-#u0 = Expression('exp(-1/(2*sigma*sigma)*(x[0]*x[0]+x[1]*x[1]))',sigma=sigma)
-u0 = Expression('cos(pi*x[0])',pi=pi)
+u0 = Expression('exp(-1/(2*sigma*sigma)*(x[0]*x[0]+x[1]*x[1]))',sigma=sigma)
+#u0 = Expression('cos(pi*x[0])',pi=pi)
 #u0 = Constant(0.0)
 u_1 = interpolate(u0,V)
 
@@ -51,7 +50,7 @@ L = (u_1 +dt*f)*v*dx
 
 A = assemble(a)
 u = Function(V)
-T = 0.5
+T = 2.0
 t = dt
 b = None
 exact = Expression('t*x[0]*x[0]*(1.0/2- x[0]/3.0)',t=0.0)
@@ -59,7 +58,7 @@ plt_lst = [0.05,0.1,0.25,0.4]
 counter=0
 while t<=T:
 	b = assemble(L, tensor=b)
-	u0.t = t
+	exact.t = t
 	f.t=t
 	picard(u,u_1,a,L,b,maxiter)
 	#solve(A,u.vector(),b)
@@ -77,13 +76,15 @@ while t<=T:
 		#viz_u.update(u)
 		#viz_u.write_ps('nummeric',format='pdf')
 	'''
-	maxdiff = np.abs(u_e.vector().array()-u.vector().array()).max()
-	exact.t=t
+	plot(u)
+	interactive()
+	#maxdiff = np.abs(u_e.vector().array()-u.vector().array()).max()
+	#exact.t=t
 	#print 'Max error, t=%.2f: %-10.17f' % (t, maxdiff)
-	e = u_e.vector().array() - u.vector().array()
-	E = np.sqrt(np.sum(e**2)/u.vector().array().size)
-	counter +=1
-	print "error: ",E," t = ",t
+	#e = u_e.vector().array() - u.vector().array()
+	#E = np.sqrt(np.sum(e**2)/u.vector().array().size)
+	#counter +=1
+	#print "error: ",E," t = ",t
 
 '''
 exp(-pi*pi*t)*cos(pi*x[0])
