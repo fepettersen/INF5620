@@ -252,7 +252,15 @@ implement this as a function where the maximum nuber of iterations is given as a
 \section{Verification}
 For the first verification of the program we will assume $\rho = \alpha(u) = 1$, $f(\mathbf{x},t) = 0$ and $I(\mathbf{x}) = \cos(\pi x)$. We 
 will wrok on the domain $\Omega = [0,1]\times[0,1]$. This should give an analytic solution of $u(x,y,t) = e^{-\pi^2t}\cos(\pi x)$. Since we have used 
-the Backward Euler discertization in time we should have an error of $\Delta t$, and therefore also a first order convergence. \\
+the Backward Euler discertization in time we should have an error of $\Delta t$, and therefore also a first order convergence. An important 
+quality of the error should be that the error per timestep is approximately constant per timestep. That is if $\Delta t = \Delta x^2$, and 
+we call the error E we should have $E/\Delta t$ remains approximately constant for the same time when the mesh is refined. We calculate the 
+error by
+\begin{lstlisting}
+e = u_e.vector().array() - u.vector().array()
+E = np.sqrt(np.sum(e**2)/u.vector().array().size)
+\end{lstlisting}
+
 We can then use the method of manifactured solutions to do another verification of the program. Restricting ourselves to one spatial dimension we 
 choose our solution to be 
 \begin{equation}
@@ -309,7 +317,7 @@ should simply die down. I have included some plots from this simulation in figur
 \begin{figure}[H]
 \centering
 \includegraphics[scale=0.6]{nonlinear_simulation_3.png}
-\caption{The system in the end of the simulation (t=1.4)}
+\caption{The system in the end of the simulation (t=1.4). Notice that the range of colors vary from 0.0157 to 0.0157.}
 \label{simulation_3}
 \end{figure}
 \section{Final comments}

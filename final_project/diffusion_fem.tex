@@ -252,7 +252,33 @@ implement this as a function where the maximum nuber of iterations is given as a
 \section{Verification}
 For the first verification of the program we will assume $\rho = \alpha(u) = 1$, $f(\mathbf{x},t) = 0$ and $I(\mathbf{x}) = \cos(\pi x)$. We 
 will wrok on the domain $\Omega = [0,1]\times[0,1]$. This should give an analytic solution of $u(x,y,t) = e^{-\pi^2t}\cos(\pi x)$. Since we have used 
-the Backward Euler discertization in time we should have an error of $\Delta t$, and therefore also a first order convergence. \\
+the Backward Euler discertization in time we should have an error of $\Delta t$, and therefore also a first order convergence. An important 
+quality of the error should be that the error per timestep is approximately constant per timestep. That is if $\Delta t = \Delta x^2$, and 
+we call the error E we should have $E/\Delta t$ remains approximately constant for the same time when the mesh is refined. We calculate the 
+error by
+\begin{lstlisting}
+e = u_e.vector().array() - u.vector().array()
+E = np.sqrt(np.sum(e**2)/u.vector().array().size)
+\end{lstlisting}
+Where u\_e is a projection of the exact solution on to the function space used for the numerical solution u. Below we have listed the output 
+from computing $E/\Delta t$ for $t\simeq0.005$ for different resolutions in the mesh.
+\begin{lstlisting}
+fredriep@WorkStation:~/uio/INF5620/final_project$ python exc_cd.py 1 40 40
+error:  0.175761870575  t =  0.005
+
+fredriep@WorkStation:~/uio/INF5620/final_project$ python exc_cd.py 1 67 67
+error:  0.172341502209  t =  0.00512363555358
+
+fredriep@WorkStation:~/uio/INF5620/final_project$ python exc_cd.py 1 80 80
+error:  0.167433801143  t =  0.005
+
+fredriep@WorkStation:~/uio/INF5620/final_project$ python exc_cd.py 1 100 100
+error:  0.165526711019  t =  0.005
+
+fredriep@WorkStation:~/uio/INF5620/final_project$ python exc_cd.py 1 180 180
+error:  0.16200056506  t =  0.005
+\end{lstlisting}
+and as expected this relation remains approximately the same for increasingly finer meshes.\\
 We can then use the method of manifactured solutions to do another verification of the program. Restricting ourselves to one spatial dimension we 
 choose our solution to be 
 \begin{equation}
@@ -313,6 +339,8 @@ should simply die down. I have included some plots from this simulation in figur
 \label{simulation_3}
 \end{figure}
 \section{Final comments}
+The program used to solve the numeric part of this project can be found in the appendix.
+\newpage
 \appendix
 \section{Source code}
 \lstinputlisting{exc_cd.py}
