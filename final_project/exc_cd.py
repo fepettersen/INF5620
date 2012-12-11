@@ -29,15 +29,15 @@ dt = (1./divisions[0])**2
 sigma = 0.1
 
 V = FunctionSpace(mesh,'Lagrange',degree)
-#f = Expression('rho*x[0]*x[0]*(1.0/2-x[0]/3.0) +pow(x[0],4)*pow(t,3)*(8.0*pow(x[0],3)/9.0 -28.0*x[0]*x[0]/9.0 +\
-#				7.0*x[0]/2.0 -5.0/4.0) +t*(2.0*x[0] -1.0)',rho=rho,t=0.0)#Constant(0.0)
-f = Constant(0.0)
+f = Expression('rho*x[0]*x[0]*(1.0/2-x[0]/3.0) +pow(x[0],4)*pow(t,3)*(8.0*pow(x[0],3)/9.0 -28.0*x[0]*x[0]/9.0 +\
+				7.0*x[0]/2.0 -5.0/4.0) +t*(2.0*x[0] -1.0)',rho=rho,t=0.0)#Constant(0.0)
+#f = Constant(0.0)
 u = TrialFunction(V)
 v = TestFunction(V)
 
-u0 = Expression('exp(-1/(2*sigma*sigma)*(x[0]*x[0]+x[1]*x[1]))',sigma=sigma)
-u0 = Expression('cos(pi*x[0])',pi=pi)
-#u0 = Constant(0.0)
+#u0 = Expression('exp(-1/(2*sigma*sigma)*(x[0]*x[0]+x[1]*x[1]))',sigma=sigma)
+#u0 = Expression('cos(pi*x[0])',pi=pi)
+u0 = Constant(0.0)
 u_1 = interpolate(u0,V)
 
 def u0_boundary(x,on_boundary):
@@ -53,8 +53,8 @@ u = Function(V)
 T = 0.1
 t = dt
 b = None
-#exact = Expression('t*x[0]*x[0]*(1.0/2- x[0]/3.0)',t=0.0)
-exact = Expression('exp(-pi*pi*t)*cos(pi*x[0])',pi=pi,t=0)
+exact = Expression('t*x[0]*x[0]*(1.0/2- x[0]/3.0)',t=0.0)
+#exact = Expression('exp(-pi*pi*t)*cos(pi*x[0])',pi=pi,t=0)
 plt_lst = [0.05,0.1,0.25,0.4]
 counter=0
 while t<=T:
@@ -71,7 +71,8 @@ while t<=T:
 	#print 'Max error, t=%.2f: %-10.17f' % (t, maxdiff)
 	e = u_e.vector().array() - u.vector().array()
 	E = np.sqrt(np.sum(e**2)/u.vector().array().size)
-	#counter +=1
-	print "error: ",E/dt," t = ",t
+	counter +=1
+	if counter%10==0:
+		print "error: ",E," t = ",t
 	t+=dt
 

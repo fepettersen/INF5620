@@ -84,20 +84,16 @@ us a block matrix for M and K.
 
 If we now set $M_{ij} = \rho\int\limits_0^L(\phi_j\phi_i)dx$ and $K_{ij} = \Delta t\int\limits_0^L\alpha(u^{n-1})(\phi'_j\phi'_i)dx $ we get
 \begin{align*}
-M_{ij} = \int\limits_0^L(\phi_j\phi_i)dx \implies M_{00} = \int\limits_{-1}^1(\phi_0\phi_0)dx
+M_{ij} =  \rho\int\limits_0^L(\phi_j\phi_i)dx \implies M_{00} = \rho \int\limits_{-1}^1(\phi_0\phi_0)dx
 \end{align*}
-We are using P1 elements, and so the only nonzero integrals we will get are when $i=j$ and $i\pm1 = j$, meaning M and K will become tridiagonal.\\
+We are using P1 elements, and so the only nonzero integrals we will get are when $i=j$ and $i\pm1 = j$, meaning M and K will become tridiagonal. 
+Notice that $\alpha(u^{n-1})$ is known since $\alpha(u)$ is a known function, and $u^{n-1}$ is simply the previous timestep which is known.
+
 \begin{align*}
- \int\limits_0^Lu_j^{n+1}vdx -2\int\limits_0^Lu_j^nvdx + \int\limits_0^Lu_j^{n-1}vdx &+ \int\limits_0^Lu_x^nv_xdx    = \\
-\sum\limits_j^{N_x}\int\limits_0^L(\phi_j\phi_i)c_j^{n+1}dx - 2\sum\limits_j^{N_x}\int\limits_0^L(\phi_j\phi_i)c_j^{n}dx &+ 
-  \sum\limits_j^{N_x}\int\limits_0^L(\phi_j\phi_i)c_j^{n-1}dx - C^2\sum\limits_j^{N_x}\int\limits_0^L(\phi'_j\phi'_i)c_j^{n}dx
-\end{align*}
-If we now set $M_{ij} = \int\limits_0^L(\phi_j\phi_i)dx$ and $K_{ij} = \int\limits_0^L(\phi'_j\phi'_i)dx $ we get
-\begin{align*}
-M_{ii} =  \int\limits_{-1}^1(\phi_i\phi_i)dx, \;\;\;
-M_{ij} = M_{ji} = \int\limits_{-1}^1(\phi_j\phi_i)dx \\
-K_{ii} =  \int\limits_{-1}^1(\phi'_i\phi'_i)dx, \;\;\;
-K_{ij} = K_{ji} = \int\limits_{-1}^1(\phi'_j\phi'_i)dx
+M_{ii} =   \rho\int\limits_{-1}^1(\phi_i\phi_i)dx, \;\;\;
+M_{ij} = M_{ji} =  \rho\int\limits_{-1}^1(\phi_j\phi_i)dx \\
+K_{ii} =  \alpha(u^{n-1}_{i,i})\int\limits_{-1}^1(\phi'_i\phi'_i)dx, \;\;\;
+K_{ij} = K_{ji} = \alpha(u^{n-1}_{i,j})\int\limits_{-1}^1(\phi'_j\phi'_i)dx
 \end{align*}
 Remember that for every $M_{ii}$ and $K_{ii}$ entry there are two possible function combinations because within each element there 
 are defined two functions say $\phi_0 = \frac{1}{2}(1-x)$ and $\phi_1 = \frac{1}{2}(1+x)$. This means that for every diagonal entry 
@@ -105,13 +101,14 @@ we need to calculate the sum of two integrals (or just multiply by 2 since they 
 \begin{align*}
 M_{ii} = \int\limits_{-1}^1(\phi_i\phi_i)dX = 2\frac{h}{8}\int\limits_{-1}^1(1-X)^2dX = 2\frac{h}{8}\cdot\frac{8}{3} = \frac{2h}{3}\\
 M_{ij} = \int\limits_{-1}^1(\phi_i\phi_j)dX = \frac{h}{8}\int\limits_{-1}^1(1-X)(1+X)dX = \frac{h}{8}\cdot\frac{4}{3} = \frac{h}{6}\\
-K_{ii} = 2\int\limits_{-1}^1\phi'_i\phi'_idX = 2\int\limits_{-1}^1(\frac{2}{h}\phi'_i\frac{2}{h}\phi'_i)\frac{h}{2}dX
- = 2\frac{2}{h}\int\limits_{-1}^1\frac{-1}{2}\frac{-1}{2}dX = 2\frac{1}{h}\\
-K_{ij} = \int\limits_{-1}^1\phi'_i\phi'_jdX = \frac{2}{h}\int\limits_{-1}^1\frac{-1}{2}\frac{1}{2}dX = \frac{-1}{h}
+K_{ii} = 2\alpha(u^{n-1}_{i,i})\int\limits_{-1}^1\phi'_i\phi'_idX = 2\alpha(u^{n-1}_{i,i})\int\limits_{-1}^1(\frac{2}{h}\phi'_i\frac{2}{h}\phi'_i)\frac{h}{2}dX
+ \\= 2\alpha(u^{n-1}_{i,i})\frac{2}{h}\int\limits_{-1}^1\frac{-1}{2}\frac{-1}{2}dX = 2\alpha(u^{n-1}_{i,i})\frac{1}{h}\\
+K_{ij} = \alpha(u^{n-1}_{i,j})\int\limits_{-1}^1\phi'_i\phi'_jdX = \alpha(u^{n-1}_{i,j})\frac{2}{h}\int\limits_{-1}^1\frac{-1}{2}\frac{1}{2}dX = 
+\alpha(u^{n-1}_{i,j})\frac{-1}{h}
 \end{align*}
 This makes our matrices
-\begin{equation*}
- M = \frac{h}{6}\left(\begin{array}{c c c c c c}
+\begin{equation}\label{matrices}
+ M = \rho\frac{h}{6}\left(\begin{array}{c c c c c c}
     4 & 1 & 0 & \dots & & 0 \\
     1 & 4 & 1 & 0 &\dots & \vdots \\
     0 & \ddots & \ddots & \ddots & 0& \\
@@ -119,7 +116,7 @@ This makes our matrices
      0 & \dots & 0 & 1 & 4 & 1\\
      0 & & \dots & 0 & 1 & 4
  \end{array}\right), \:\;
- K = \frac{1}{h}\left(\begin{array}{c c c c c c}
+ K = \alpha(u^{n-1})\frac{1}{h}\left(\begin{array}{c c c c c c}
           2 & -1 & 0 & \dots & & 0 \\
 	  -1 & 2 & -1 & 0 &\dots & \vdots \\
 	  0 & \ddots & \ddots & \ddots & 0& \\
@@ -127,8 +124,9 @@ This makes our matrices
 	  0 & \dots & 0 & -1 & 2 & -1\\
 	  0 & & \dots & 0 & -1 & 2
                       \end{array}\right)
-\end{equation*}
-we are left with
+\end{equation}
+Setting the $\alpha(u^{n-1})$ is not strictly correct, since it is most likely different at each meshpoit, but it simplifies writing a bit. 
+We are now left with
 \begin{align*}
 M\mathbf{u}^n + K(u^{n-1})\mathbf{u}^n = M\mathbf{u}^{n-1} + \mathbf{b}\\
 \implies \mathbf{u}^n = (M+K(u^{n-1}))^{-1}(M\mathbf{u}^{n-1} -\mathbf{b})
@@ -145,25 +143,26 @@ for $u\simeq \sum\limits_{i=1}^N\phi_iu_i$ we get the following
 If we now set $\alpha(\sum\limits_i\phi_iu_i^{n})\approx \sum\limits_i\phi_i\alpha(u_i^{n})$ and focus on the integral with $\alpha$, we are left with
 (in one dimension)
 \begin{align*}
- \int_\Omega \sum\limits_i\phi_i\alpha(u_i^{n})\sum\limits_j(\phi'_j\phi'_k)u_j^ndx
+ \int_x \sum\limits_i\phi_i\alpha(u_i^{n})\sum\limits_j(\phi'_j\phi'_k)u_j^ndx
 \end{align*}
 Which we transfer to a reference element $X\in[-1,1]$ where ${d \phi \over d X} = {d\phi \over dX}{dX \over dx} = {d\phi \over dX}{2\over h}$ 
-and ${dx\over dX}={h\over 2}$. Theese calculations will result in an element matrix which we can assemble so that we get a linear system
+and ${dx\over dX}={h\over 2}$. Theese calculations will result in an element matrix which we can assemble so that we get a linear system. We will 
+integrate by the trapezoidal rule since we do not know what $\alpha(u^{n})$.
 \begin{align*}
- {(-1)^r(-1)^s\over h}\int\limits_{-1}^1\alpha(u_i)\phi_i\phi'_j\phi'_kdX \\
- \approx{(-1)^r(-1)^s\over 2h}\Big(\underbrace{\sum\limits_r\alpha(u_{i+r})\cdot\phi_{i+r}}_{\neq0 \,\text{when}\, r=1} +
+ &{(-1)^r(-1)^s\over h}\int\limits_{-1}^1\alpha(u_i)\phi_i\phi'_j\phi'_kdX \\
+  \approx{(-1)^r(-1)^s \over 2h}& \Big(\underbrace{\sum\limits_r\alpha(u_{i+r})\cdot\phi_{i+r}}_{\neq0 \,\text{when} \, r=1} +
  \underbrace{\sum\limits_s\alpha(u_{i+s})\cdot\phi_{i+s}}_{\neq0 \,\text{when}\, s=0}\Big) \\
- \implies {1\over 2h}(\alpha(u_{i+1})+\alpha(u_i))\cdot\left[\begin{array}{c c}
+ \implies {1\over 2h}& (\alpha(u_{i+1})+\alpha(u_i))\cdot\left[\begin{array}{c c}
                                                         1&-1\\
                                                         -1&1
-                                                       \end{array}\right] =K^{(i)}
+                                                       \end{array} \right] =K^{(i)}
 \end{align*}
-
+Where $K^{(i)}$ denotes the i'th diagonal element in the matrix K.\\
 The entire linear system is then
 $$
 M\mathbf{u}^n +\Delta tK\mathbf{u}^n = M\mathbf{u}^{n-1} +\mathbf{b}
 $$
-where M is the same matrix as in (SOMEREFERENCE). This means that the i'th equation in the system is
+where M is the same matrix as in equation (\ref{matrices}). This means that the i'th equation in the system is
 \begin{align*}
  {h\over6}\big(u^{n}_{i+1}+4u^{n}_{i} +u^{n}_{i-1}\big) -{\Delta t\over 2h}\big(\alpha(u^{n}_{i+1})+\alpha(u^{n}_{i})\big)\big(u^{n}_{i+1}
  -2u^{n}_{i} +u^{n}_{i-1}\big) -{h\over6}\big(u^{n-1}_{i+1}+4u^{n-1}_{i}+u^{n-1}_{i-1}\big) = \Delta tf(x_i,t_n)
@@ -181,9 +180,9 @@ which looks suspiciously like a finite difference scheme. In fact we recognize t
 Looking a bit closer at the right hand side, this looks like a normal second order derivative of u wrt x multiplied by the average of 
 $\alpha(u^n_{i+1/2})$ and of course the source term. Now, our equation has a right hand side on the form (in one spatial dimension)
 \begin{equation*}
- {\d u\over\d x}\alpha(u){\d u\over\d x}u
+ {\d \over\d x}\alpha(u){\d \over\d x}u
 \end{equation*}
-and so it would seem that if we (for some reason) approximate this with $ {\d u\over\d x}\alpha(u){\d u\over\d x}u \approx \alpha(\bar{u}) 
+and so it would seem that if we (for some reason) approximate this with $ {\d \over\d x}\alpha(u){\d \over\d x}u \approx \alpha(\bar{u}) 
 {\d^2 u\over \d x^2}$ we arrive at a finite difference scheme equivalent to using the group finite element method
 \begin{align*}
  \left[D_t\left(u +{1\over6}\Delta x^2D_xD_xu\right)= \alpha(\bar{u})D_xD_xu +f\right]^n_i
@@ -251,7 +250,7 @@ implement this as a function where the maximum nuber of iterations is given as a
 
 \section{Verification}
 For the first verification of the program we will assume $\rho = \alpha(u) = 1$, $f(\mathbf{x},t) = 0$ and $I(\mathbf{x}) = \cos(\pi x)$. We 
-will wrok on the domain $\Omega = [0,1]\times[0,1]$. This should give an analytic solution of $u(x,y,t) = e^{-\pi^2t}\cos(\pi x)$. Since we have used 
+will work on the domain $\Omega = [0,1]\times[0,1]$. This should give an analytic solution of $u(x,y,t) = e^{-\pi^2t}\cos(\pi x)$. Since we have used 
 the Backward Euler discertization in time we should have an error of $\Delta t$, and therefore also a first order convergence. An important 
 quality of the error should be that the error per timestep is approximately constant per timestep. That is if $\Delta t = \Delta x^2$, and 
 we call the error E we should have $E/\Delta t$ remains approximately constant for the same time when the mesh is refined. We calculate the 
@@ -260,7 +259,25 @@ error by
 e = u_e.vector().array() - u.vector().array()
 E = np.sqrt(np.sum(e**2)/u.vector().array().size)
 \end{lstlisting}
+Where u\_e is a projection of the exact solution on to the function space used for the numerical solution u. Below we have listed the output 
+from computing $E/\Delta t$ for $t\simeq0.005$ for different resolutions in the mesh.
+\begin{lstlisting}
+fredriep@WorkStation:~/uio/INF5620/final_project$ python exc_cd.py 1 40 40
+error:  0.175761870575  t =  0.005
 
+fredriep@WorkStation:~/uio/INF5620/final_project$ python exc_cd.py 1 67 67
+error:  0.172341502209  t =  0.00512363555358
+
+fredriep@WorkStation:~/uio/INF5620/final_project$ python exc_cd.py 1 80 80
+error:  0.167433801143  t =  0.005
+
+fredriep@WorkStation:~/uio/INF5620/final_project$ python exc_cd.py 1 100 100
+error:  0.165526711019  t =  0.005
+
+fredriep@WorkStation:~/uio/INF5620/final_project$ python exc_cd.py 1 180 180
+error:  0.16200056506  t =  0.005
+\end{lstlisting}
+and as expected this relation remains approximately the same for increasingly finer meshes.\\
 We can then use the method of manifactured solutions to do another verification of the program. Restricting ourselves to one spatial dimension we 
 choose our solution to be 
 \begin{equation}
@@ -321,6 +338,8 @@ should simply die down. I have included some plots from this simulation in figur
 \label{simulation_3}
 \end{figure}
 \section{Final comments}
+The program used to solve the numeric part of this project can be found in the appendix.
+\newpage
 \appendix
 \section{Source code}
 \lstinputlisting{exc_cd.py}
